@@ -4,8 +4,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { notifyZapier } from "@/lib/zapier";
 import type { SubscriptionCategory } from "@/lib/types";
+import { parsePrice } from "@/lib/validation";
 
-export type ActionResult = { ok: true } | { ok: false; error: string };
+export type ActionResult =
+  | { ok: true; redirectTo?: string }
+  | { ok: false; error: string };
 
 export async function signUpAction(formData: FormData): Promise<ActionResult> {
   const email = String(formData.get("email") || "").trim();
@@ -20,14 +23,16 @@ export async function signUpAction(formData: FormData): Promise<ActionResult> {
   }
 
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ).replace(/\/$/, "");
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { full_name: fullName },
-      emailRedirectTo: `${siteUrl}/auth/callback?next=/onboarding`,
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
@@ -38,13 +43,17 @@ export async function signUpAction(formData: FormData): Promise<ActionResult> {
     return { ok: false, error: error.message };
   }
 
-  await notifyZapier("new_signup", {
+  notifyZapier("new_signup", {
     user_id: data.user?.id,
     email,
     full_name: fullName,
   });
 
-  redirect("/verify-email");
+  if (data.session) {
+    return { ok: true, redirectTo: "/onboarding" };
+  }
+
+  return { ok: true, redirectTo: "/verify-email" };
 }
 
 export async function signInAction(formData: FormData): Promise<ActionResult> {
@@ -61,9 +70,12 @@ export async function signInAction(formData: FormData): Promise<ActionResult> {
   const { data: profile } = await supabase
     .from("profiles")
     .select("onboarding_completed")
-    .single();
+    .maybeSingle();
 
-  redirect(profile?.onboarding_completed ? "/dashboard" : "/onboarding");
+  return {
+    ok: true,
+    redirectTo: profile?.onboarding_completed ? "/dashboard" : "/onboarding",
+  };
 }
 
 export async function signOutAction() {
@@ -162,10 +174,10 @@ export async function upsertSubscriptionAction(
   const id = String(formData.get("id") || "");
   const provider_name = String(formData.get("provider_name") || "").trim();
   const category = String(formData.get("category") || "") as SubscriptionCategory;
-  const monthly_price = Number(formData.get("monthly_price"));
+  const monthly_price = parsePrice(formData.get("monthly_price"));
   const subscribed_at = String(formData.get("subscribed_at") || "") || null;
 
-  if (!provider_name || !category || Number.isNaN(monthly_price)) {
+  if (!provider_name || !category || !Number.isFinite(monthly_price)) {
     return { ok: false, error: "required" };
   }
 
@@ -178,15 +190,45 @@ export async function upsertSubscriptionAction(
   };
 
   if (id) {
+    const { data: prev } = await supabase
+      .from("user_subscriptions")
+      .select("monthly_price")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
     const { error } = await supabase
       .from("user_subscriptions")
       .update(row)
       .eq("id", id)
       .eq("user_id", user.id);
     if (error) return { ok: false, error: error.message };
+
+    if (
+      !prev ||
+      Number(prev.monthly_price) !== monthly_price
+    ) {
+      const { ensurePriceHistoryPoint } = await import("@/lib/data");
+      await ensurePriceHistoryPoint(
+        id,
+        monthly_price,
+        prev ? "Mise à jour" : "Prix actuel",
+      );
+    }
   } else {
-    const { error } = await supabase.from("user_subscriptions").insert(row);
+    const { data: created, error } = await supabase
+      .from("user_subscriptions")
+      .insert(row)
+      .select("id")
+      .single();
     if (error) return { ok: false, error: error.message };
+
+    const { ensurePriceHistoryPoint } = await import("@/lib/data");
+    await ensurePriceHistoryPoint(
+      created.id,
+      monthly_price,
+      subscribed_at ? "Prix initial" : "Prix actuel",
+    );
   }
 
   return { ok: true };
@@ -236,10 +278,22 @@ export async function completeOnboardingAction(
   if (!user) return { ok: false, error: "notAuthenticated" };
 
   if (items.length) {
-    const { error } = await supabase.from("user_subscriptions").insert(
-      items.map((item) => ({ ...item, user_id: user.id })),
-    );
+    const { data: created, error } = await supabase
+      .from("user_subscriptions")
+      .insert(items.map((item) => ({ ...item, user_id: user.id })))
+      .select("id, monthly_price, subscribed_at");
     if (error) return { ok: false, error: error.message };
+
+    const { ensurePriceHistoryPoint } = await import("@/lib/data");
+    await Promise.all(
+      (created || []).map((row) =>
+        ensurePriceHistoryPoint(
+          row.id,
+          Number(row.monthly_price),
+          row.subscribed_at ? "Prix initial" : "Prix actuel",
+        ),
+      ),
+    );
   }
 
   const { error: profileError } = await supabase

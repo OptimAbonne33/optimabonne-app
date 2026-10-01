@@ -6,7 +6,8 @@ import {
   completeOnboardingAction,
   skipOnboardingAction,
 } from "@/app/actions";
-import { CATEGORIES, CATEGORY_ICONS, type SubscriptionCategory } from "@/lib/types";
+import { CATEGORIES, type SubscriptionCategory } from "@/lib/types";
+import { CategoryIcon } from "@/components/icons";
 import { SubmitButton, Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import {
@@ -160,8 +161,9 @@ export function OnboardingForm() {
                 key={`${item.provider_name}-${idx}`}
                 className="flex items-center justify-between rounded-[10px] border border-border bg-surface2 px-4 py-3 text-[13px]"
               >
-                <span>
-                  {CATEGORY_ICONS[item.category]} {item.provider_name}
+                <span className="flex items-center gap-2">
+                  <CategoryIcon category={item.category} size={14} className="text-accent" />
+                  {item.provider_name}
                 </span>
                 <span className="font-[family-name:var(--font-ibm-plex)] text-accent">
                   {item.monthly_price}€
@@ -188,8 +190,8 @@ export function OnboardingForm() {
                     : "border-border hover:border-accent hover:bg-accent/[0.04]"
                 }`}
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-surface2 text-base">
-                  {CATEGORY_ICONS[cat]}
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-surface2 ${selected ? "text-accent" : "text-muted"}`}>
+                  <CategoryIcon category={cat} size={18} />
                 </span>
                 <span>
                   <span className="block text-[13px] font-medium">

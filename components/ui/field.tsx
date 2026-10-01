@@ -45,10 +45,10 @@ export function Field({
         name={name}
         type={type}
         placeholder={placeholder}
-        defaultValue={defaultValue}
-        value={value}
+        {...(value !== undefined
+          ? { value, onChange }
+          : { defaultValue, onChange })}
         autoComplete={autoComplete}
-        onChange={onChange}
         onBlur={onBlur}
         step={step}
         min={min}

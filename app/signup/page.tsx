@@ -1,5 +1,7 @@
 import { AuthForm } from "@/components/auth-form";
 
+export const dynamic = "force-dynamic";
+
 export default function SignupPage() {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg">

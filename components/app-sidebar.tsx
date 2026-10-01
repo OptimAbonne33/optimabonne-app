@@ -5,6 +5,13 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Logo } from "@/components/logo";
 import { signOutAction } from "@/app/actions";
+import {
+  IconDashboard,
+  IconProfile,
+  IconRecommendations,
+  IconSpark,
+  IconSubscriptions,
+} from "@/components/icons";
 
 export function AppSidebar({ userName }: { userName: string }) {
   const t = useTranslations("nav");
@@ -17,16 +24,68 @@ export function AppSidebar({ userName }: { userName: string }) {
     .slice(0, 2)
     .toUpperCase();
 
-  const items = [
-    { href: "/dashboard", icon: "⊞", label: t("dashboard"), match: "/dashboard" },
+  const menuItems = [
+    {
+      href: "/dashboard",
+      icon: IconDashboard,
+      label: t("dashboard"),
+      match: "/dashboard",
+    },
     {
       href: "/subscriptions",
-      icon: "◈",
+      icon: IconSubscriptions,
       label: t("subscriptions"),
       match: "/subscriptions",
     },
-    { href: "/profile", icon: "👤", label: t("profile"), match: "/profile" },
+    {
+      href: "/recommendations",
+      icon: IconRecommendations,
+      label: t("recommendations"),
+      match: "/recommendations",
+    },
   ];
+
+  const accountItems = [
+    {
+      href: "/profile",
+      icon: IconProfile,
+      label: t("profile"),
+      match: "/profile",
+    },
+  ];
+
+  function NavLink({
+    href,
+    icon: Icon,
+    label,
+    match,
+  }: {
+    href: string;
+    icon: typeof IconDashboard;
+    label: string;
+    match: string;
+  }) {
+    const active = pathname.startsWith(match);
+    return (
+      <Link
+        href={href}
+        className={`mb-px flex items-center gap-2.5 rounded-[9px] px-2.5 py-[9px] text-[13px] transition-colors ${
+          active
+            ? "bg-accent/10 text-accent"
+            : "text-muted hover:bg-surface2 hover:text-ink"
+        }`}
+      >
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+            active ? "bg-accent/15 text-accent" : "bg-surface2 text-muted"
+          }`}
+        >
+          <Icon size={14} />
+        </span>
+        {label}
+      </Link>
+    );
+  }
 
   return (
     <aside className="sticky top-0 hidden min-h-screen w-[220px] shrink-0 flex-col border-r border-border bg-surface py-6 md:flex">
@@ -38,48 +97,16 @@ export function AppSidebar({ userName }: { userName: string }) {
         <p className="mb-1.5 mt-1 px-2 text-[10px] uppercase tracking-[1.5px] text-muted">
           {t("menu")}
         </p>
-        {items.slice(0, 2).map((item) => {
-          const active = pathname.startsWith(item.match);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`mb-px flex items-center gap-2.5 rounded-[9px] px-2.5 py-[9px] text-[13px] transition-colors ${
-                active
-                  ? "bg-accent/10 text-accent"
-                  : "text-muted hover:bg-surface2 hover:text-ink"
-              }`}
-            >
-              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-surface2 text-[9px]">
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          );
-        })}
+        {menuItems.map((item) => (
+          <NavLink key={item.href} {...item} />
+        ))}
 
         <p className="mb-1.5 mt-4 px-2 text-[10px] uppercase tracking-[1.5px] text-muted">
           {t("account")}
         </p>
-        {items.slice(2).map((item) => {
-          const active = pathname.startsWith(item.match);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`mb-px flex items-center gap-2.5 rounded-[9px] px-2.5 py-[9px] text-[13px] transition-colors ${
-                active
-                  ? "bg-accent/10 text-accent"
-                  : "text-muted hover:bg-surface2 hover:text-ink"
-              }`}
-            >
-              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-surface2 text-[9px]">
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          );
-        })}
+        {accountItems.map((item) => (
+          <NavLink key={item.href} {...item} />
+        ))}
       </nav>
 
       <div className="border-t border-border px-3 pt-4">
@@ -89,7 +116,10 @@ export function AppSidebar({ userName }: { userName: string }) {
           </div>
           <div className="min-w-0">
             <p className="truncate text-xs font-medium">{userName}</p>
-            <p className="text-[10px] text-accent">✦ Essai</p>
+            <p className="flex items-center gap-1 text-[10px] text-accent">
+              <IconSpark size={10} />
+              Essai
+            </p>
           </div>
         </div>
         <form action={signOutAction}>

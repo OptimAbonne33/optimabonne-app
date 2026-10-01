@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { deleteSubscriptionAction } from "@/app/actions";
-import { CATEGORY_ICONS, type UserSubscription } from "@/lib/types";
+import { CategoryIcon, IconClose, IconPlus } from "@/components/icons";
+import type { UserSubscription } from "@/lib/types";
 
 export function SubscriptionList({ items }: { items: UserSubscription[] }) {
   const t = useTranslations("subscriptions");
@@ -35,8 +36,9 @@ export function SubscriptionList({ items }: { items: UserSubscription[] }) {
         <p className="mt-2 text-sm text-muted">{t("emptyHint")}</p>
         <Link
           href="/subscriptions/new"
-          className="mt-6 inline-flex rounded-[10px] bg-accent px-5 py-2.5 text-[13px] font-semibold text-[#0a0f1e]"
+          className="mt-6 inline-flex items-center gap-2 rounded-[10px] bg-accent px-5 py-2.5 text-[13px] font-semibold text-[#0a0f1e]"
         >
+          <IconPlus size={14} />
           {t("add")}
         </Link>
       </div>
@@ -55,9 +57,10 @@ export function SubscriptionList({ items }: { items: UserSubscription[] }) {
         </div>
         <Link
           href="/subscriptions/new"
-          className="rounded-[10px] bg-accent px-5 py-2.5 text-[13px] font-semibold text-[#0a0f1e] hover:bg-[#00ffb3]"
+          className="inline-flex items-center gap-2 rounded-[10px] bg-accent px-5 py-2.5 text-[13px] font-semibold text-[#0a0f1e] hover:bg-[#00ffb3]"
         >
-          + {t("add")}
+          <IconPlus size={14} />
+          {t("add")}
         </Link>
       </div>
 
@@ -67,22 +70,33 @@ export function SubscriptionList({ items }: { items: UserSubscription[] }) {
             key={sub.id}
             className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-5"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface2 text-xl">
-              {CATEGORY_ICONS[sub.category]}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-[family-name:var(--font-syne)] text-base font-bold">
-                {sub.provider_name}
+            <Link
+              href={`/subscriptions/${sub.id}`}
+              className="flex min-w-0 flex-1 items-center gap-4"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface2 text-accent">
+                <CategoryIcon category={sub.category} size={22} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-[family-name:var(--font-syne)] text-base font-bold">
+                  {sub.provider_name}
+                </p>
+                <p className="text-[13px] text-muted">{tc(sub.category)}</p>
+              </div>
+              <p className="font-[family-name:var(--font-ibm-plex)] text-xl font-semibold">
+                {Number(sub.monthly_price).toFixed(2)}€
+                <span className="text-xs text-muted">{t("monthly")}</span>
               </p>
-              <p className="text-[13px] text-muted">{tc(sub.category)}</p>
-            </div>
-            <p className="font-[family-name:var(--font-ibm-plex)] text-xl font-semibold">
-              {Number(sub.monthly_price).toFixed(2)}€
-              <span className="text-xs text-muted">{t("monthly")}</span>
-            </p>
+            </Link>
             <div className="flex gap-2">
               <Link
                 href={`/subscriptions/${sub.id}`}
+                className="rounded-lg border border-border px-3 py-2 text-[12px] text-muted hover:text-ink"
+              >
+                {t("view")}
+              </Link>
+              <Link
+                href={`/subscriptions/${sub.id}/edit`}
                 className="rounded-lg border border-border px-3 py-2 text-[12px] text-muted hover:text-ink"
               >
                 {tCommon("edit")}
@@ -90,9 +104,10 @@ export function SubscriptionList({ items }: { items: UserSubscription[] }) {
               <button
                 type="button"
                 onClick={() => onDelete(sub.id)}
-                className="rounded-lg border border-danger/30 px-3 py-2 text-[12px] text-danger"
+                className="inline-flex items-center justify-center rounded-lg border border-danger/30 px-3 py-2 text-danger"
+                aria-label={tCommon("delete")}
               >
-                ✕
+                <IconClose size={12} />
               </button>
             </div>
           </li>

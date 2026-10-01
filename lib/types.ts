@@ -32,9 +32,3 @@ export const CATEGORIES: SubscriptionCategory[] = [
   "energy",
 ];
 
-export const CATEGORY_ICONS: Record<SubscriptionCategory, string> = {
-  mobile: "📱",
-  internet: "🌐",
-  streaming: "🎬",
-  energy: "⚡",
-};

@@ -9,10 +9,10 @@ import {
 } from "@/app/actions";
 import {
   CATEGORIES,
-  CATEGORY_ICONS,
   type SubscriptionCategory,
   type UserSubscription,
 } from "@/lib/types";
+import { CategoryIcon } from "@/components/icons";
 import { SubmitButton, Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { isBlank, isPositivePrice, type FieldErrors } from "@/lib/validation";
@@ -70,7 +70,11 @@ export function SubscriptionForm({
         setFormError(result.error);
         return;
       }
-      router.push("/subscriptions");
+      router.push(
+        mode === "edit" && initial?.id
+          ? `/subscriptions/${initial.id}`
+          : "/subscriptions",
+      );
       router.refresh();
     });
   }
@@ -102,14 +106,14 @@ export function SubscriptionForm({
             key={cat}
             type="button"
             onClick={() => setCategory(cat)}
-            className={`flex items-center gap-2 rounded-xl border px-3 py-3 text-left text-[13px] ${
+            className={`flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left text-[13px] ${
               category === cat
-                ? "border-accent bg-accent/10"
-                : "border-border bg-surface2"
+                ? "border-accent bg-accent/10 text-accent"
+                : "border-border bg-surface2 text-muted"
             }`}
           >
-            <span>{CATEGORY_ICONS[cat]}</span>
-            {tc(cat)}
+            <CategoryIcon category={cat} size={16} />
+            <span className={category === cat ? "text-ink" : ""}>{tc(cat)}</span>
           </button>
         ))}
       </div>

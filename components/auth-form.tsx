@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { signInAction, signUpAction } from "@/app/actions";
 import { Field } from "@/components/ui/field";
-import { SubmitButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import {
   isBlank,
@@ -22,10 +23,14 @@ export function AuthForm({
   const tb = useTranslations("brand");
   const tc = useTranslations("common");
   const te = useTranslations("errors");
+  const router = useRouter();
   const [tab, setTab] = useState<"login" | "signup">(initialTab);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
 
   function switchTab(next: "login" | "signup") {
     setTab(next);
@@ -33,11 +38,8 @@ export function AuthForm({
     setFormError(null);
   }
 
-  function validate(fd: FormData): FieldErrors {
+  function validate(): FieldErrors {
     const errors: FieldErrors = {};
-    const email = String(fd.get("email") || "");
-    const password = String(fd.get("password") || "");
-    const fullName = String(fd.get("fullName") || "");
 
     if (isBlank(email)) errors.email = te("required");
     else if (!isEmail(email)) errors.email = te("invalidEmail");
@@ -54,18 +56,32 @@ export function AuthForm({
     return errors;
   }
 
-  function onSubmit(formData: FormData) {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setFormError(null);
-    const errors = validate(formData);
+
+    const errors = validate();
     setFieldErrors(errors);
     if (Object.keys(errors).length) return;
 
+    const fd = new FormData();
+    fd.set("email", email.trim());
+    fd.set("password", password);
+    fd.set("fullName", fullName.trim());
+
     startTransition(async () => {
-      const result =
-        tab === "login"
-          ? await signInAction(formData)
-          : await signUpAction(formData);
-      if (result && !result.ok) {
+      try {
+        const result =
+          tab === "login" ? await signInAction(fd) : await signUpAction(fd);
+
+        if (!result) return;
+
+        if (result.ok) {
+          router.replace(result.redirectTo || "/dashboard");
+          router.refresh();
+          return;
+        }
+
         const key = result.error;
         if (key === "weakPassword") {
           setFieldErrors({ password: te("weakPassword") });
@@ -73,11 +89,14 @@ export function AuthForm({
           setFieldErrors({ email: te("emailTaken") });
         } else if (key === "invalidCredentials") {
           setFormError(te("invalidCredentials"));
-        } else if (key === "required") {
-          setFormError(te("required"));
+        } else if (key.toLowerCase().includes("rate limit")) {
+          setFormError(te("emailRateLimit"));
         } else {
           setFormError(key);
         }
+      } catch (err) {
+        console.error(err);
+        setFormError("Une erreur est survenue. Réessayez (hard refresh).");
       }
     });
   }
@@ -110,20 +129,22 @@ export function AuthForm({
         </button>
       </div>
 
-      <form action={onSubmit} noValidate>
+      <form onSubmit={onSubmit} noValidate>
         {tab === "signup" ? (
           <Field
             label={t("fullName")}
             name="fullName"
             autoComplete="name"
+            value={fullName}
             error={fieldErrors.fullName}
-            onChange={() =>
-              setFieldErrors((e) => {
-                const next = { ...e };
+            onChange={(e) => {
+              setFullName(e.target.value);
+              setFieldErrors((prev) => {
+                const next = { ...prev };
                 delete next.fullName;
                 return next;
-              })
-            }
+              });
+            }}
           />
         ) : null}
         <Field
@@ -132,14 +153,16 @@ export function AuthForm({
           type="email"
           autoComplete="email"
           placeholder="marie@exemple.fr"
+          value={email}
           error={fieldErrors.email}
-          onChange={() =>
-            setFieldErrors((e) => {
-              const next = { ...e };
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setFieldErrors((prev) => {
+              const next = { ...prev };
               delete next.email;
               return next;
-            })
-          }
+            });
+          }}
         />
         <Field
           label={t("password")}
@@ -147,14 +170,16 @@ export function AuthForm({
           type="password"
           autoComplete={tab === "login" ? "current-password" : "new-password"}
           placeholder="••••••••"
+          value={password}
           error={fieldErrors.password}
-          onChange={() =>
-            setFieldErrors((e) => {
-              const next = { ...e };
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setFieldErrors((prev) => {
+              const next = { ...prev };
               delete next.password;
               return next;
-            })
-          }
+            });
+          }}
         />
 
         {tab === "login" ? (
@@ -169,9 +194,13 @@ export function AuthForm({
           </p>
         ) : null}
 
-        <SubmitButton>
-          {tab === "login" ? t("submitLogin") : t("submitSignup")}
-        </SubmitButton>
+        <Button type="submit" disabled={pending}>
+          {pending
+            ? "…"
+            : tab === "login"
+              ? t("submitLogin")
+              : t("submitSignup")}
+        </Button>
       </form>
 
       <div className="my-5 flex items-center gap-3 text-xs text-muted">

@@ -14,8 +14,16 @@ export function isStrongEnoughPassword(v: unknown) {
   return String(v ?? "").length >= 6;
 }
 
+export function parsePrice(v: unknown): number {
+  const raw = String(v ?? "")
+    .trim()
+    .replace(/\s/g, "")
+    .replace(",", ".");
+  return Number(raw);
+}
+
 export function isPositivePrice(v: unknown) {
-  const n = Number(v);
+  const n = parsePrice(v);
   return Number.isFinite(n) && n > 0;
 }
 

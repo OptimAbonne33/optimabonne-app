@@ -5,7 +5,7 @@ type ZapierEvent =
   | "subscription_active"
   | "subscription_cancelled";
 
-export async function notifyZapier(
+export function notifyZapier(
   event: ZapierEvent,
   payload: Record<string, unknown>,
 ) {
@@ -15,17 +15,19 @@ export async function notifyZapier(
     return;
   }
 
-  try {
-    await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        event,
-        timestamp: new Date().toISOString(),
-        ...payload,
-      }),
-    });
-  } catch (err) {
-    console.error("webhook failed", err);
-  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 2500);
+
+  void fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      event,
+      timestamp: new Date().toISOString(),
+      ...payload,
+    }),
+    signal: controller.signal,
+  })
+    .catch((err) => console.error("webhook failed", err))
+    .finally(() => clearTimeout(timer));
 }
