@@ -50,19 +50,21 @@ export function RecommendationsView({
   return (
     <div className="animate-[fadeUp_0.5s_ease_both]">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <h1 className="font-[family-name:var(--font-syne)] text-[26px] font-bold tracking-tight">
             {t("title")}
           </h1>
           <p className="mt-1 text-sm text-muted">{t("subtitle")}</p>
         </div>
         {totalSavings > 0 ? (
-          <div className="rounded-xl border border-accent/25 bg-accent/10 px-5 py-3 text-right">
-            <p className="font-[family-name:var(--font-syne)] text-2xl font-extrabold text-accent">
+          <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-accent/25 bg-accent/10 px-4 py-3.5 sm:w-auto sm:flex-col sm:items-end sm:justify-center sm:gap-0.5 sm:px-5 sm:py-3 sm:text-right">
+            <p className="font-[family-name:var(--font-syne)] text-[22px] font-extrabold leading-none text-accent sm:text-2xl">
               {formatEuro(totalSavings, 0)}
-              <span className="text-sm font-medium text-accent/70">{t("perMonth")}</span>
+              <span className="text-sm font-medium text-accent/70">
+                {t("perMonth")}
+              </span>
             </p>
-            <p className="text-[11px] text-muted">
+            <p className="max-w-[9.5rem] text-right text-[11px] leading-snug text-muted sm:max-w-none">
               {t("yearPotential", { amount: formatEuro(annualSavings, 0) })}
             </p>
           </div>

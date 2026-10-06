@@ -11,9 +11,17 @@ import {
   IconRecommendations,
   IconSpark,
   IconSubscriptions,
+  IconBilling,
 } from "@/components/icons";
+import type { BillingStatus } from "@/lib/types";
 
-export function AppSidebar({ userName }: { userName: string }) {
+export function AppSidebar({
+  userName,
+  billingStatus,
+}: {
+  userName: string;
+  billingStatus: BillingStatus;
+}) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
@@ -46,6 +54,12 @@ export function AppSidebar({ userName }: { userName: string }) {
   ];
 
   const accountItems = [
+    {
+      href: "/billing",
+      icon: IconBilling,
+      label: t("billing"),
+      match: "/billing",
+    },
     {
       href: "/profile",
       icon: IconProfile,
@@ -118,7 +132,7 @@ export function AppSidebar({ userName }: { userName: string }) {
             <p className="truncate text-xs font-medium">{userName}</p>
             <p className="flex items-center gap-1 text-[10px] text-accent">
               <IconSpark size={10} />
-              Essai
+              {t(`billingStatus.${billingStatus}`)}
             </p>
           </div>
         </div>

@@ -3,8 +3,16 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { notifyZapier } from "@/lib/zapier";
-import type { SubscriptionCategory } from "@/lib/types";
+import type { BillingPlan, SubscriptionCategory } from "@/lib/types";
 import { parsePrice } from "@/lib/validation";
+import {
+  TRIAL_DAYS,
+  checkoutTag,
+  getSiteUrl,
+  getStripe,
+  isStripeConfigured,
+  priceIdForPlan,
+} from "@/lib/stripe";
 
 export type ActionResult =
   | { ok: true; redirectTo?: string }
@@ -177,8 +185,11 @@ export async function upsertSubscriptionAction(
   const monthly_price = parsePrice(formData.get("monthly_price"));
   const subscribed_at = String(formData.get("subscribed_at") || "") || null;
 
-  if (!provider_name || !category || !Number.isFinite(monthly_price)) {
+  if (!provider_name || !category) {
     return { ok: false, error: "required" };
+  }
+  if (!Number.isFinite(monthly_price) || monthly_price <= 0) {
+    return { ok: false, error: "invalidPrice" };
   }
 
   const row = {
@@ -271,6 +282,25 @@ export async function completeOnboardingAction(
     return { ok: false, error: "required" };
   }
 
+  items = items.map((item) => ({
+    ...item,
+    provider_name: String(item.provider_name || "").trim(),
+    monthly_price: parsePrice(item.monthly_price),
+    subscribed_at: item.subscribed_at || null,
+  }));
+
+  if (
+    items.some(
+      (item) =>
+        !item.provider_name ||
+        !item.category ||
+        !Number.isFinite(item.monthly_price) ||
+        item.monthly_price <= 0,
+    )
+  ) {
+    return { ok: false, error: "invalidPrice" };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -319,4 +349,96 @@ export async function skipOnboardingAction() {
     .eq("id", user.id);
 
   redirect("/dashboard");
+}
+
+export async function startCheckoutAction(formData: FormData): Promise<ActionResult> {
+  if (!isStripeConfigured()) {
+    return { ok: false, error: "billingNotConfigured" };
+  }
+
+  const planRaw = String(formData.get("plan") || "");
+  const plan: BillingPlan = planRaw === "annual" ? "annual" : "monthly";
+  const stripe = getStripe();
+  const priceId = priceIdForPlan(plan);
+  if (!stripe || !priceId) {
+    return { ok: false, error: "billingNotConfigured" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "notAuthenticated" };
+
+  const { data: billing } = await supabase
+    .from("billing_subscriptions")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  let customerId = billing?.stripe_customer_id as string | null;
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: user.email || undefined,
+      metadata: { user_id: user.id },
+    });
+    customerId = customer.id;
+    await supabase
+      .from("billing_subscriptions")
+      .update({ stripe_customer_id: customerId })
+      .eq("user_id", user.id);
+  }
+
+  const siteUrl = getSiteUrl();
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer: customerId,
+    client_reference_id: user.id,
+    locale: "fr",
+    line_items: [{ price: priceId, quantity: 1 }],
+    subscription_data: {
+      trial_period_days: TRIAL_DAYS,
+      metadata: { user_id: user.id, plan },
+    },
+    metadata: { user_id: user.id, plan },
+    success_url: `${siteUrl}/billing?checkout=success`,
+    cancel_url: `${siteUrl}/billing?checkout=cancel`,
+    integration_identifier: checkoutTag(plan),
+  });
+
+  if (!session.url) return { ok: false, error: "billingUnavailable" };
+  redirect(session.url);
+}
+
+export async function openBillingPortalAction(): Promise<ActionResult> {
+  if (!isStripeConfigured()) {
+    return { ok: false, error: "billingNotConfigured" };
+  }
+
+  const stripe = getStripe();
+  if (!stripe) return { ok: false, error: "billingNotConfigured" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "notAuthenticated" };
+
+  const { data: billing } = await supabase
+    .from("billing_subscriptions")
+    .select("stripe_customer_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!billing?.stripe_customer_id) {
+    return { ok: false, error: "billingUnavailable" };
+  }
+
+  const portal = await stripe.billingPortal.sessions.create({
+    customer: billing.stripe_customer_id,
+    return_url: `${getSiteUrl()}/billing`,
+  });
+
+  if (!portal.url) return { ok: false, error: "billingUnavailable" };
+  redirect(portal.url);
 }

@@ -94,6 +94,16 @@ export function IconProfile(props: IconProps) {
   );
 }
 
+export function IconBilling(props: IconProps) {
+  return (
+    <svg {...base(props)}>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M7 15h4" />
+    </svg>
+  );
+}
+
 export function IconWarning(props: IconProps) {
   return (
     <svg {...base(props)}>

@@ -102,11 +102,13 @@ export function AuthForm({
   }
 
   return (
-    <div className="relative z-10 w-[420px] max-w-[calc(100%-2rem)] rounded-[24px] border border-border bg-surface p-12">
+    <div className="relative z-10 w-[420px] max-w-[calc(100%-2rem)] rounded-[24px] border border-border bg-surface px-5 py-8 sm:p-12">
       <div className="mb-2 text-center">
         <Logo size="lg" />
       </div>
-      <p className="mb-8 text-center text-[13px] text-muted">{tb("tagline")}</p>
+      <p className="mb-8 px-1 text-center text-[13px] leading-relaxed text-muted">
+        {tb("tagline")}
+      </p>
 
       <div className="mb-7 flex rounded-xl bg-surface2 p-1">
         <button
@@ -134,7 +136,8 @@ export function AuthForm({
           <Field
             label={t("fullName")}
             name="fullName"
-            autoComplete="name"
+            autoComplete="given-name"
+            placeholder={t("fullNamePlaceholder")}
             value={fullName}
             error={fieldErrors.fullName}
             onChange={(e) => {

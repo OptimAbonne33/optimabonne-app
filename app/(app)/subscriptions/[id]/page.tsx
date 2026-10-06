@@ -68,7 +68,7 @@ export default async function SubscriptionDetailPage({
         ] satisfies PriceHistoryEntry[]);
 
   return (
-    <div className="animate-[fadeUp_0.5s_ease_both]">
+    <div className="min-w-0 animate-[fadeUp_0.5s_ease_both]">
       <Link
         href="/subscriptions"
         className="mb-6 inline-block text-[13px] text-muted hover:text-ink"
@@ -105,21 +105,21 @@ export default async function SubscriptionDetailPage({
         </div>
       </div>
 
-      <div className="mb-5 grid gap-5 md:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-5 grid min-w-0 gap-3 sm:gap-5 md:grid-cols-3">
+        <div className="min-w-0 rounded-2xl border border-border bg-surface p-4 sm:p-6">
           <p className="text-[11px] font-semibold tracking-wide text-muted">
             {t("currentPrice")}
           </p>
-          <p className="mt-2 font-[family-name:var(--font-ibm-plex)] text-[32px] font-semibold">
+          <p className="mt-2 break-words font-[family-name:var(--font-ibm-plex)] text-[26px] font-semibold sm:text-[32px]">
             {formatEuro(Number(sub.monthly_price))}
             <span className="text-sm text-muted">{tr("perMonth")}</span>
           </p>
         </div>
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="min-w-0 rounded-2xl border border-border bg-surface p-4 sm:p-6">
           <p className="text-[11px] font-semibold tracking-wide text-muted">
             {t("bestAlt")}
           </p>
-          <p className="mt-2 font-[family-name:var(--font-syne)] text-[28px] font-extrabold text-accent">
+          <p className="mt-2 break-words font-[family-name:var(--font-syne)] text-[24px] font-extrabold text-accent sm:text-[28px]">
             {best
               ? formatEuro(Number(best.offer.monthly_price))
               : "—"}
@@ -137,12 +137,12 @@ export default async function SubscriptionDetailPage({
             <p className="mt-1 text-xs text-muted">{t("alreadyBest")}</p>
           )}
         </div>
-        <div className="rounded-2xl border border-border bg-surface p-6">
+        <div className="min-w-0 rounded-2xl border border-border bg-surface p-4 sm:p-6">
           <p className="text-[11px] font-semibold tracking-wide text-muted">
             {t("potential")}
           </p>
           <p
-            className={`mt-2 font-[family-name:var(--font-syne)] text-[32px] font-extrabold ${
+            className={`mt-2 break-words font-[family-name:var(--font-syne)] text-[26px] font-extrabold sm:text-[32px] ${
               best ? "text-warn" : "text-accent"
             }`}
           >
@@ -156,15 +156,15 @@ export default async function SubscriptionDetailPage({
         </div>
       </div>
 
-      <div className="mb-5 grid gap-5 lg:grid-cols-2">
-        <section className="rounded-2xl border border-border bg-surface p-6">
+      <div className="mb-5 grid min-w-0 gap-5 lg:grid-cols-2">
+        <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface p-4 sm:p-6">
           <h2 className="mb-5 font-[family-name:var(--font-syne)] text-sm font-bold">
             {t("priceHistory")}
           </h2>
           <PriceHistoryChart entries={chartHistory} />
         </section>
 
-        <section className="rounded-2xl border border-border bg-surface p-6">
+        <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface p-4 sm:p-6">
           <h2 className="mb-5 font-[family-name:var(--font-syne)] text-sm font-bold">
             {t("alternatives")}
           </h2>
@@ -195,33 +195,37 @@ export default async function SubscriptionDetailPage({
 function AltRow({ reco, cta }: { reco: Recommendation; cta: string }) {
   const urgent = reco.severity === "urgent";
   return (
-    <li className="flex items-center gap-3 rounded-xl bg-surface2 p-4">
+    <li className="flex flex-col gap-3 rounded-xl bg-surface2 p-3.5 sm:flex-row sm:items-center sm:gap-3 sm:p-4">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-medium">
+        <p className="break-words text-[13px] font-medium">
           {reco.offer.offer_name}
         </p>
-        <p className="truncate text-xs text-muted">{reco.offer.description}</p>
-      </div>
-      <div className="text-right">
-        <p className="font-[family-name:var(--font-ibm-plex)] text-sm font-semibold">
-          {formatEuro(Number(reco.offer.monthly_price))}
+        <p className="mt-0.5 line-clamp-2 text-xs text-muted">
+          {reco.offer.description}
         </p>
-        <p
-          className={`text-[11px] font-medium ${
-            urgent ? "text-warn" : "text-accent"
-          }`}
+      </div>
+      <div className="flex items-center justify-between gap-3 sm:contents">
+        <div className="shrink-0 text-left sm:text-right">
+          <p className="font-[family-name:var(--font-ibm-plex)] text-sm font-semibold">
+            {formatEuro(Number(reco.offer.monthly_price))}
+          </p>
+          <p
+            className={`text-[11px] font-medium ${
+              urgent ? "text-warn" : "text-accent"
+            }`}
+          >
+            −{formatEuro(reco.monthlySavings, 0)}
+          </p>
+        </div>
+        <a
+          href={reco.offer.affiliate_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 rounded-lg bg-accent/15 px-3 py-2 text-center text-[11px] font-semibold text-accent"
         >
-          −{formatEuro(reco.monthlySavings, 0)}
-        </p>
+          {cta}
+        </a>
       </div>
-      <a
-        href={reco.offer.affiliate_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="shrink-0 rounded-lg bg-accent/15 px-3 py-2 text-[11px] font-semibold text-accent"
-      >
-        {cta}
-      </a>
     </li>
   );
 }

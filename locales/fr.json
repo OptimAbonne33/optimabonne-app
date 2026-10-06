@@ -18,20 +18,31 @@
   "nav": {
     "menu": "Menu",
     "dashboard": "Tableau de bord",
+    "dashboardShort": "Accueil",
     "subscriptions": "Mes abonnements",
+    "subscriptionsShort": "Abos",
     "account": "Compte",
     "profile": "Profil",
     "billing": "Facturation",
     "optimize": "Optimiser",
     "recommendations": "Recommandations",
-    "logout": "Déconnexion"
+    "recommendationsShort": "Offres",
+    "logout": "Déconnexion",
+    "billingStatus": {
+      "none": "Gratuit",
+      "trial": "Essai",
+      "active": "Actif",
+      "expired": "Expiré",
+      "cancelled": "Annulé"
+    }
   },
   "auth": {
     "login": "Connexion",
     "signup": "Inscription",
     "email": "Adresse email",
     "password": "Mot de passe",
-    "fullName": "Nom complet",
+    "fullName": "Prénom",
+    "fullNamePlaceholder": "Marie",
     "forgot": "Mot de passe oublié ?",
     "submitLogin": "Se connecter",
     "submitSignup": "Créer mon compte",
@@ -131,7 +142,8 @@
   "profile": {
     "title": "Profil",
     "subtitle": "Gérez vos informations personnelles",
-    "fullName": "Nom complet",
+    "fullName": "Prénom",
+    "fullNamePlaceholder": "Marie",
     "email": "Email",
     "password": "Nouveau mot de passe",
     "passwordHint": "Laissez vide pour ne pas changer",
@@ -174,6 +186,37 @@
     "yearPotential": "Potentiel / an",
     "ctaOnboarding": "Compléter mon profil d'abonnements"
   },
+  "billing": {
+    "title": "Facturation",
+    "subtitle": "Gérez votre essai et votre abonnement OptimAbonne",
+    "currentPlan": "Statut actuel",
+    "status": {
+      "none": "Aucun abonnement",
+      "trial": "Essai 14 jours",
+      "active": "Abonnement actif",
+      "expired": "Essai ou paiement expiré",
+      "cancelled": "Abonnement annulé"
+    },
+    "plan": {
+      "monthly": "Offre mensuelle",
+      "annual": "Offre annuelle"
+    },
+    "trialUntil": "Essai jusqu'au {date}",
+    "renewsOn": "Prochain renouvellement : {date}",
+    "monthlyLabel": "Mensuel",
+    "annualLabel": "Annuel — 2 mois offerts",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "trialHint": "14 jours d'essai, carte requise. Sans engagement pendant l'essai.",
+    "chooseMonthly": "Commencer l'essai — 9,99€/mois",
+    "chooseAnnual": "Commencer l'essai — 49€/an",
+    "manage": "Gérer mon abonnement",
+    "notConfigured": "Les paiements Stripe ne sont pas encore connectés. L'app reste utilisable en attendant.",
+    "checkoutSuccess": "Paiement enregistré. Le statut se met à jour en quelques secondes.",
+    "checkoutCancel": "Checkout annulé. Vous pouvez réessayer quand vous voulez.",
+    "bannerLocked": "Pour continuer, lancez l'essai 14 jours ou réactivez votre abonnement.",
+    "bannerCta": "Voir les offres"
+  },
   "errors": {
     "invalidCredentials": "Email ou mot de passe incorrect",
     "emailTaken": "Cet email est déjà utilisé",
@@ -183,6 +226,8 @@
     "invalidPrice": "Indiquez un prix mensuel valide",
     "invalidConfirm": "Le texte de confirmation ne correspond pas",
     "emailRateLimit": "Trop d'emails envoyés. Réessayez dans environ une heure (limite Supabase).",
-    "notAuthenticated": "Veuillez vous connecter"
+    "notAuthenticated": "Veuillez vous connecter",
+    "billingNotConfigured": "Les paiements ne sont pas encore configurés",
+    "billingUnavailable": "Impossible d'ouvrir Stripe pour le moment"
   }
 }

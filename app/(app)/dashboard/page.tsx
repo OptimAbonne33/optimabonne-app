@@ -4,6 +4,7 @@ import { DashboardView } from "@/components/dashboard/dashboard-view";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { IconArrowRight } from "@/components/icons";
+import { displayFirstName } from "@/lib/types";
 
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
@@ -17,8 +18,10 @@ export default async function DashboardPage() {
     loadOptimization(user!.id),
   ]);
 
-  const fullName = profile?.full_name || profile?.email || user!.email || "";
-  const firstName = fullName.split(" ")[0] || "là";
+  const firstName = displayFirstName(
+    profile?.full_name || profile?.email || user!.email,
+    "là",
+  );
 
   if (
     !profile?.onboarding_completed &&

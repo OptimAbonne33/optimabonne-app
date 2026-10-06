@@ -93,6 +93,8 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           <Field
             label={t("fullName")}
             name="fullName"
+            autoComplete="given-name"
+            placeholder={t("fullNamePlaceholder")}
             defaultValue={profile.full_name || ""}
             error={fieldErrors.fullName}
             onChange={() => clearErr("fullName")}

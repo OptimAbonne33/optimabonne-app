@@ -18,20 +18,31 @@
   "nav": {
     "menu": "Menu",
     "dashboard": "Dashboard",
+    "dashboardShort": "Home",
     "subscriptions": "My subscriptions",
+    "subscriptionsShort": "Plans",
     "account": "Account",
     "profile": "Profile",
     "billing": "Billing",
     "optimize": "Optimize",
     "recommendations": "Recommendations",
-    "logout": "Log out"
+    "recommendationsShort": "Offers",
+    "logout": "Log out",
+    "billingStatus": {
+      "none": "Free",
+      "trial": "Trial",
+      "active": "Active",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    }
   },
   "auth": {
     "login": "Log in",
     "signup": "Sign up",
     "email": "Email address",
     "password": "Password",
-    "fullName": "Full name",
+    "fullName": "First name",
+    "fullNamePlaceholder": "Marie",
     "forgot": "Forgot password?",
     "submitLogin": "Log in",
     "submitSignup": "Create my account",
@@ -131,7 +142,8 @@
   "profile": {
     "title": "Profile",
     "subtitle": "Manage your personal information",
-    "fullName": "Full name",
+    "fullName": "First name",
+    "fullNamePlaceholder": "Marie",
     "email": "Email",
     "password": "New password",
     "passwordHint": "Leave blank to keep current password",
@@ -174,6 +186,37 @@
     "yearPotential": "Yearly potential",
     "ctaOnboarding": "Complete my subscription profile"
   },
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Manage your OptimAbonne trial and subscription",
+    "currentPlan": "Current status",
+    "status": {
+      "none": "No subscription",
+      "trial": "14-day trial",
+      "active": "Active subscription",
+      "expired": "Trial or payment expired",
+      "cancelled": "Subscription cancelled"
+    },
+    "plan": {
+      "monthly": "Monthly plan",
+      "annual": "Annual plan"
+    },
+    "trialUntil": "Trial until {date}",
+    "renewsOn": "Renews on {date}",
+    "monthlyLabel": "Monthly",
+    "annualLabel": "Annual — 2 months free",
+    "perMonth": "/mo",
+    "perYear": "/year",
+    "trialHint": "14-day trial, card required. No charge during the trial.",
+    "chooseMonthly": "Start trial — €9.99/mo",
+    "chooseAnnual": "Start trial — €49/year",
+    "manage": "Manage subscription",
+    "notConfigured": "Stripe is not connected yet. You can keep using the app in the meantime.",
+    "checkoutSuccess": "Payment recorded. Status updates in a few seconds.",
+    "checkoutCancel": "Checkout cancelled. You can try again anytime.",
+    "bannerLocked": "Start the 14-day trial or reactivate your plan to continue.",
+    "bannerCta": "See plans"
+  },
   "errors": {
     "invalidCredentials": "Invalid email or password",
     "emailTaken": "This email is already in use",
@@ -183,6 +226,8 @@
     "invalidPrice": "Enter a valid monthly price",
     "invalidConfirm": "Confirmation text does not match",
     "emailRateLimit": "Too many emails sent. Try again in about an hour (Supabase limit).",
-    "notAuthenticated": "Please log in"
+    "notAuthenticated": "Please log in",
+    "billingNotConfigured": "Payments are not configured yet",
+    "billingUnavailable": "Unable to open Stripe right now"
   }
 }

@@ -3,23 +3,28 @@ import Link from "next/link";
 export function Logo({
   size = "md",
   className = "",
+  href = "/dashboard",
 }: {
   size?: "sm" | "md" | "lg";
   className?: string;
+  href?: string;
 }) {
-  const cls =
-    size === "lg"
-      ? "text-[22px]"
-      : size === "sm"
-        ? "text-[15px]"
-        : "text-xl";
+  const height = size === "lg" ? 32 : size === "sm" ? 22 : 26;
+  const maxWidth = size === "lg" ? 220 : 160;
 
   return (
     <Link
-      href="/dashboard"
-      className={`inline-block max-w-full truncate font-[family-name:var(--font-syne)] font-extrabold tracking-[-0.5px] ${cls} ${className}`}
+      href={href}
+      className={`inline-flex max-w-full items-center ${className}`}
+      aria-label="OptimAbonne"
     >
-      Optim<span className="text-accent">Abonne</span>
+      <img
+        src="/optimabonne-logo.svg"
+        alt="OptimAbonne"
+        height={height}
+        className="block h-auto w-auto max-w-full"
+        style={{ height, maxWidth }}
+      />
     </Link>
   );
 }

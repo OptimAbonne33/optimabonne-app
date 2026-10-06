@@ -24,9 +24,11 @@
   --color-ink: var(--text);
   --color-muted: var(--muted);
   --color-danger: var(--red);
-  --font-sans: var(--font-dm-sans);
-  --font-display: var(--font-syne);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
   --font-mono: var(--font-ibm-plex);
+  --font-syne: var(--font-jakarta);
+  --font-dm-sans: var(--font-jakarta);
 }
 
 * {
@@ -40,7 +42,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
   min-height: 100vh;
 }
 

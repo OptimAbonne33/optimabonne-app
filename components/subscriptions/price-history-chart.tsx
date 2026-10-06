@@ -41,10 +41,10 @@ export function PriceHistoryChart({
       : "";
 
   return (
-    <div>
+    <div className="min-w-0">
       <svg
         viewBox={`0 0 ${w} ${h}`}
-        className="h-[140px] w-full overflow-visible"
+        className="h-[120px] w-full max-w-full overflow-visible sm:h-[140px]"
         preserveAspectRatio="none"
       >
         <defs>
@@ -86,13 +86,13 @@ export function PriceHistoryChart({
         {[...entries].reverse().slice(0, 5).map((e) => (
           <li
             key={e.id}
-            className="flex items-center justify-between text-[12px]"
+            className="flex items-center justify-between gap-3 text-[12px]"
           >
-            <span className="text-muted">
+            <span className="min-w-0 truncate text-muted">
               {e.recorded_at}
               {e.label ? ` · ${e.label}` : ""}
             </span>
-            <span className="font-[family-name:var(--font-ibm-plex)] font-medium">
+            <span className="shrink-0 font-[family-name:var(--font-ibm-plex)] font-medium">
               {formatEuro(Number(e.price))}
             </span>
           </li>

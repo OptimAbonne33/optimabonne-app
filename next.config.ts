@@ -35,7 +35,16 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/auth/:path*",
+        source: "/billing",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-cache, no-store, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      {
+        source: "/api/webhooks/stripe",
         headers: [
           {
             key: "Cache-Control",

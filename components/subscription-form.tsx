@@ -130,8 +130,11 @@ export function SubscriptionForm({
         name="monthly_price"
         type="text"
         inputMode="decimal"
+        placeholder="29,99"
         defaultValue={
-          initial?.monthly_price != null ? String(initial.monthly_price) : ""
+          initial?.monthly_price != null
+            ? String(initial.monthly_price).replace(".", ",")
+            : ""
         }
         error={fieldErrors.monthly_price}
         onChange={() => clearErr("monthly_price")}

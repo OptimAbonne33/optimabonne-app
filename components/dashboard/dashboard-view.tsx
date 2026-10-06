@@ -49,7 +49,7 @@ export async function DashboardView({
     <div className="animate-[fadeUp_0.5s_ease_both]">
       <div className="mb-9 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="font-[family-name:var(--font-syne)] text-[26px] font-bold tracking-tight">
+          <h1 className="break-words font-[family-name:var(--font-syne)] text-[26px] font-bold tracking-tight">
             {t("hello", { name: firstName })}
           </h1>
           <p className="mt-1 text-sm text-muted">
@@ -90,7 +90,7 @@ export async function DashboardView({
         </div>
       ) : null}
 
-      <div className="relative mb-7 grid overflow-hidden rounded-[18px] border border-border bg-surface p-7 md:grid-cols-[auto_1fr_auto] md:items-center md:gap-8">
+      <div className="relative mb-7 grid overflow-hidden rounded-[18px] border border-border bg-surface p-5 sm:p-7 md:grid-cols-[auto_1fr_auto] md:items-center md:gap-8">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(0,229,160,0.12)_0%,transparent_70%)]" />
         <ScoreRing score={result.score} warn={warn} />
         <div>
@@ -283,9 +283,9 @@ function RecoMini({
         urgent ? "border-l-[3px] border-l-warn" : "border-l-[3px] border-l-accent"
       }`}
     >
-      <div className="flex items-start gap-3.5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3.5">
         <span
-          className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
+          className={`w-fit shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
             urgent
               ? "bg-warn/15 text-warn"
               : "bg-accent/15 text-accent"
@@ -294,7 +294,7 @@ function RecoMini({
           {urgent ? urgentLabel : savingLabel}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-medium">
+          <p className="break-words text-[13px] font-medium">
             {reco.offer.offer_name} — {reco.subscription.provider_name}
           </p>
           <p className="mt-0.5 text-xs leading-relaxed text-muted">
@@ -302,7 +302,7 @@ function RecoMini({
           </p>
         </div>
         <div
-          className={`shrink-0 text-right font-[family-name:var(--font-syne)] text-[15px] font-bold ${
+          className={`shrink-0 text-left font-[family-name:var(--font-syne)] text-[15px] font-bold sm:text-right ${
             urgent ? "text-warn" : "text-accent"
           }`}
         >
@@ -335,7 +335,7 @@ function Stat({
   return (
     <div className="flex-1 px-2 text-center">
       <p
-        className={`font-[family-name:var(--font-syne)] text-[28px] font-extrabold leading-none ${color}`}
+        className={`break-words font-[family-name:var(--font-syne)] text-[22px] font-extrabold leading-none sm:text-[28px] ${color}`}
       >
         {value}
       </p>

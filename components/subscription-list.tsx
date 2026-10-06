@@ -47,7 +47,7 @@ export function SubscriptionList({ items }: { items: UserSubscription[] }) {
 
   return (
     <div>
-      <div className="mb-6 flex items-end justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
           <p className="text-[12px] text-muted">{t("total")}</p>
           <p className="font-[family-name:var(--font-ibm-plex)] text-[34px] font-semibold text-accent">
@@ -68,27 +68,27 @@ export function SubscriptionList({ items }: { items: UserSubscription[] }) {
         {items.map((sub) => (
           <li
             key={sub.id}
-            className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-5"
+            className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5"
           >
             <Link
               href={`/subscriptions/${sub.id}`}
               className="flex min-w-0 flex-1 items-center gap-4"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface2 text-accent">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-surface2 text-accent">
                 <CategoryIcon category={sub.category} size={22} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-[family-name:var(--font-syne)] text-base font-bold">
+                <p className="truncate font-[family-name:var(--font-syne)] text-base font-bold">
                   {sub.provider_name}
                 </p>
                 <p className="text-[13px] text-muted">{tc(sub.category)}</p>
               </div>
-              <p className="font-[family-name:var(--font-ibm-plex)] text-xl font-semibold">
+              <p className="shrink-0 font-[family-name:var(--font-ibm-plex)] text-lg font-semibold sm:text-xl">
                 {Number(sub.monthly_price).toFixed(2)}€
                 <span className="text-xs text-muted">{t("monthly")}</span>
               </p>
             </Link>
-            <div className="flex gap-2">
+            <div className="flex gap-2 sm:shrink-0">
               <Link
                 href={`/subscriptions/${sub.id}`}
                 className="rounded-lg border border-border px-3 py-2 text-[12px] text-muted hover:text-ink"

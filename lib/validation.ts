@@ -15,10 +15,28 @@ export function isStrongEnoughPassword(v: unknown) {
 }
 
 export function parsePrice(v: unknown): number {
-  const raw = String(v ?? "")
+  let raw = String(v ?? "")
     .trim()
-    .replace(/\s/g, "")
-    .replace(",", ".");
+    .replace(/[\s\u00a0\u202f]/g, "");
+
+  if (!raw) return Number.NaN;
+
+  const hasComma = raw.includes(",");
+  const hasDot = raw.includes(".");
+
+  if (hasComma && hasDot) {
+    const lastComma = raw.lastIndexOf(",");
+    const lastDot = raw.lastIndexOf(".");
+    if (lastComma > lastDot) {
+      raw = raw.replace(/\./g, "").replace(",", ".");
+    } else {
+      raw = raw.replace(/,/g, "");
+    }
+  } else if (hasComma) {
+    raw = raw.replace(",", ".");
+  }
+
+  if (!/^-?\d+(\.\d+)?$/.test(raw)) return Number.NaN;
   return Number(raw);
 }
 
@@ -26,6 +44,7 @@ export function isPositivePrice(v: unknown) {
   const n = parsePrice(v);
   return Number.isFinite(n) && n > 0;
 }
+
 
 export function pickError(checks: Array<[boolean, string]>): string | null {
   for (const [ok, key] of checks) {

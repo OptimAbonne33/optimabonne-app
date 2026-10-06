@@ -17,19 +17,19 @@ export function MobileNav() {
   const items = [
     {
       href: "/dashboard",
-      label: t("dashboard"),
+      label: t("dashboardShort"),
       match: "/dashboard",
       icon: IconDashboard,
     },
     {
       href: "/subscriptions",
-      label: t("subscriptions"),
+      label: t("subscriptionsShort"),
       match: "/subscriptions",
       icon: IconSubscriptions,
     },
     {
       href: "/recommendations",
-      label: t("recommendations"),
+      label: t("recommendationsShort"),
       match: "/recommendations",
       icon: IconRecommendations,
     },
@@ -51,12 +51,12 @@ export function MobileNav() {
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
-                className={`flex flex-col items-center gap-1 px-1 py-2.5 text-center text-[10px] font-medium ${
+                className={`flex min-w-0 flex-col items-center gap-1 px-1 py-2.5 text-center text-[10px] font-medium leading-tight ${
                   active ? "text-accent" : "text-muted"
                 }`}
               >
                 <Icon size={16} />
-                <span className="truncate">{item.label}</span>
+                <span className="w-full truncate">{item.label}</span>
               </Link>
             </li>
           );

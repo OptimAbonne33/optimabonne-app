@@ -13,6 +13,7 @@ import { Field } from "@/components/ui/field";
 import {
   isBlank,
   isPositivePrice,
+  parsePrice,
   type FieldErrors,
 } from "@/lib/validation";
 
@@ -98,9 +99,9 @@ export function OnboardingForm() {
       "subscriptions",
       JSON.stringify(
         all.map((d) => ({
-          provider_name: d.provider_name,
+          provider_name: d.provider_name.trim(),
           category: d.category,
-          monthly_price: Number(d.monthly_price),
+          monthly_price: parsePrice(d.monthly_price),
           subscribed_at: d.subscribed_at || null,
         })),
       ),
@@ -113,13 +114,13 @@ export function OnboardingForm() {
   }
 
   return (
-    <div className="flex w-full max-w-[520px] flex-col items-center px-6 py-[60px]">
-      <div className="mb-12 flex items-center">
+    <div className="flex w-full max-w-[520px] flex-col items-center px-4 py-10 sm:px-6 sm:py-[60px]">
+      <div className="mb-10 flex w-full items-start sm:mb-12 sm:justify-center">
         {steps.map((step, i) => (
-          <div key={step.label} className="flex items-center">
-            <div className="flex flex-col items-center gap-2">
+          <div key={step.label} className="flex min-w-0 flex-1 items-start sm:flex-none">
+            <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 font-[family-name:var(--font-ibm-plex)] text-[13px] font-semibold ${
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 font-[family-name:var(--font-ibm-plex)] text-[12px] font-semibold sm:h-9 sm:w-9 sm:text-[13px] ${
                   step.state === "done"
                     ? "border-accent bg-accent text-[#0a0f1e]"
                     : step.state === "current"
@@ -130,7 +131,7 @@ export function OnboardingForm() {
                 {step.state === "done" ? "✓" : i + 1}
               </div>
               <span
-                className={`whitespace-nowrap text-[11px] ${
+                className={`max-w-[4.5rem] text-center text-[10px] leading-tight sm:max-w-none sm:whitespace-nowrap sm:text-[11px] ${
                   step.state === "current" ? "text-accent" : "text-muted"
                 }`}
               >
@@ -139,7 +140,7 @@ export function OnboardingForm() {
             </div>
             {i < steps.length - 1 ? (
               <div
-                className={`mb-5 h-px w-[60px] ${
+                className={`mt-4 h-px min-w-2 flex-1 sm:mb-5 sm:mt-0 sm:w-[60px] sm:flex-none ${
                   step.state === "done" ? "bg-accent" : "bg-border"
                 }`}
               />
@@ -148,7 +149,7 @@ export function OnboardingForm() {
         ))}
       </div>
 
-      <div className="w-full rounded-[24px] border border-border bg-surface p-12">
+      <div className="w-full rounded-[24px] border border-border bg-surface p-5 sm:p-12">
         <h1 className="mb-1.5 font-[family-name:var(--font-syne)] text-[22px] font-bold">
           {t("title")}
         </h1>
@@ -206,7 +207,7 @@ export function OnboardingForm() {
           })}
         </div>
 
-        <div className="mb-1 grid grid-cols-2 gap-3">
+        <div className="mb-1 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field
             label={t("provider")}
             value={draft.provider_name}
@@ -226,7 +227,7 @@ export function OnboardingForm() {
             value={draft.monthly_price}
             type="text"
             inputMode="decimal"
-            placeholder="29.99"
+            placeholder="29,99"
             error={fieldErrors.monthly_price}
             onChange={(e) => {
               setDraft((d) => ({ ...d, monthly_price: e.target.value }));
