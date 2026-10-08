@@ -61,7 +61,12 @@ export function billingPatchFromSubscription(sub: Stripe.Subscription) {
     plan: planFromSubscription(sub),
     trial_ends_at: unixToIso(sub.trial_end),
     current_period_end: subscriptionPeriodEnd(sub),
+    cancel_at_period_end: Boolean(sub.cancel_at_period_end || sub.cancel_at),
   };
+}
+
+export function isTrialEligible(billing: BillingSubscription) {
+  return !billing.trial_ends_at && !billing.stripe_subscription_id;
 }
 
 export function emptyBilling(userId: string): BillingSubscription {
@@ -74,6 +79,7 @@ export function emptyBilling(userId: string): BillingSubscription {
     plan: null,
     trial_ends_at: null,
     current_period_end: null,
+    cancel_at_period_end: false,
     created_at: "",
     updated_at: "",
   };

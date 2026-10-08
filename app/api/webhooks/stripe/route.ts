@@ -2,8 +2,16 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { notifyZapier } from "@/lib/zapier";
-import { getStripe, isStripeConfigured } from "@/lib/stripe";
-import { billingPatchFromSubscription } from "@/lib/billing";
+import {
+  REPLACEABLE_SUBSCRIPTION_STATUSES,
+  getStripe,
+  isStripeConfigured,
+} from "@/lib/stripe";
+import {
+  billingPatchFromSubscription,
+  isBillingEntitled,
+  planFromSubscription,
+} from "@/lib/billing";
 import type { BillingStatus } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -72,13 +80,29 @@ async function handleEvent(
       if (!subId) return;
       const sub = await stripe.subscriptions.retrieve(subId);
       await upsertFromSubscription(admin, sub, userIdFrom(session));
+      await cancelReplacedSubscriptions(stripe, sub);
       return;
     }
     case "customer.subscription.created":
     case "customer.subscription.updated":
-    case "customer.subscription.deleted": {
+    case "customer.subscription.deleted":
+    case "customer.subscription.paused":
+    case "customer.subscription.resumed": {
       const sub = event.data.object as Stripe.Subscription;
       await upsertFromSubscription(admin, sub, sub.metadata?.user_id);
+      return;
+    }
+    case "customer.subscription.trial_will_end": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = await upsertFromSubscription(admin, sub, sub.metadata?.user_id);
+      if (userId && sub.status === "trialing" && !sub.cancel_at_period_end) {
+        notifyZapier("trial_ending", {
+          user_id: userId,
+          plan: planFromSubscription(sub),
+          stripe_subscription_id: sub.id,
+          trial_ends_at: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+        });
+      }
       return;
     }
     case "invoice.paid":
@@ -148,69 +172,73 @@ async function subscriptionFromRiskEvent(
   return stripe.subscriptions.retrieve(subId);
 }
 
+async function cancelReplacedSubscriptions(stripe: Stripe, current: Stripe.Subscription) {
+  const customerId =
+    typeof current.customer === "string" ? current.customer : current.customer?.id;
+  if (!customerId) return;
+  const subs = await stripe.subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 100,
+  });
+  for (const sub of subs.data) {
+    if (sub.id !== current.id && REPLACEABLE_SUBSCRIPTION_STATUSES.includes(sub.status)) {
+      await stripe.subscriptions.cancel(sub.id);
+    }
+  }
+}
+
+type BillingRow = {
+  user_id: string;
+  status: BillingStatus;
+  stripe_subscription_id: string | null;
+};
+
 async function upsertFromSubscription(
   admin: ReturnType<typeof createServiceClient>,
   sub: Stripe.Subscription,
   fallbackUserId?: string | null,
-) {
+): Promise<string | null> {
   const patch = billingPatchFromSubscription(sub);
-  let userId = fallbackUserId || sub.metadata?.user_id || null;
+  const userId = fallbackUserId || sub.metadata?.user_id || null;
+  const columns = "user_id, status, stripe_subscription_id";
 
-  if (!userId && patch.stripe_customer_id) {
-    const { data } = await admin
-      .from("billing_subscriptions")
-      .select("user_id, status, trial_ends_at")
-      .eq("stripe_customer_id", patch.stripe_customer_id)
-      .maybeSingle();
-    userId = data?.user_id || null;
-    if (data) {
-      await applyPatch(admin, userId!, patch, data.status as BillingStatus, data.trial_ends_at);
-      return;
-    }
-  }
+  const { data } = userId
+    ? await admin.from("billing_subscriptions").select(columns).eq("user_id", userId).maybeSingle()
+    : patch.stripe_customer_id
+      ? await admin
+          .from("billing_subscriptions")
+          .select(columns)
+          .eq("stripe_customer_id", patch.stripe_customer_id)
+          .maybeSingle()
+      : { data: null };
 
-  if (!userId) return;
+  const current = data as BillingRow | null;
+  if (!current) return null;
 
-  const { data: current } = await admin
-    .from("billing_subscriptions")
-    .select("status, trial_ends_at")
-    .eq("user_id", userId)
-    .maybeSingle();
+  const isStale =
+    current.stripe_subscription_id &&
+    current.stripe_subscription_id !== sub.id &&
+    !isBillingEntitled(patch.status);
+  if (isStale) return current.user_id;
 
-  await applyPatch(
-    admin,
-    userId,
-    patch,
-    (current?.status as BillingStatus) || "none",
-    current?.trial_ends_at || null,
-  );
-}
-
-async function applyPatch(
-  admin: ReturnType<typeof createServiceClient>,
-  userId: string,
-  patch: ReturnType<typeof billingPatchFromSubscription>,
-  previousStatus: BillingStatus,
-  previousTrialEnd: string | null,
-) {
   const { error } = await admin
     .from("billing_subscriptions")
     .update(patch)
-    .eq("user_id", userId);
-
+    .eq("user_id", current.user_id);
   if (error) throw error;
 
-  emitZapier(previousStatus, patch.status, patch.trial_ends_at || previousTrialEnd, {
-    user_id: userId,
+  emitZapier(current.status, patch.status, {
+    user_id: current.user_id,
     plan: patch.plan,
     stripe_subscription_id: patch.stripe_subscription_id,
   });
+  return current.user_id;
 }
 
 function emitZapier(
   previous: BillingStatus,
   next: BillingStatus,
-  trialEndsAt: string | null,
   payload: Record<string, unknown>,
 ) {
   if (previous !== "trial" && next === "trial") {
@@ -221,11 +249,5 @@ function emitZapier(
   }
   if (previous !== "cancelled" && next === "cancelled") {
     notifyZapier("subscription_cancelled", payload);
-  }
-  if (next === "trial" && trialEndsAt) {
-    const ms = new Date(trialEndsAt).getTime() - Date.now();
-    if (ms > 0 && ms <= 3 * 24 * 60 * 60 * 1000) {
-      notifyZapier("trial_ending", { ...payload, trial_ends_at: trialEndsAt });
-    }
   }
 }

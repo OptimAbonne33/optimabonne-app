@@ -1,11 +1,15 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { notifyZapier } from "@/lib/zapier";
 import type { BillingPlan, SubscriptionCategory } from "@/lib/types";
 import { parsePrice } from "@/lib/validation";
+import { billingPatchFromSubscription } from "@/lib/billing";
 import {
+  BLOCKING_SUBSCRIPTION_STATUSES,
   TRIAL_DAYS,
   checkoutTag,
   getSiteUrl,
@@ -157,6 +161,25 @@ export async function deleteAccountAction(
   try {
     const { createServiceClient } = await import("@/lib/supabase/admin");
     const admin = createServiceClient();
+
+    const stripe = isStripeConfigured() ? getStripe() : null;
+    if (stripe) {
+      const { data: billing } = await admin
+        .from("billing_subscriptions")
+        .select("stripe_customer_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (billing?.stripe_customer_id) {
+        try {
+          await stripe.customers.del(billing.stripe_customer_id);
+        } catch (err) {
+          if ((err as Stripe.errors.StripeError)?.code !== "resource_missing") {
+            return { ok: false, error: "billingUnavailable" };
+          }
+        }
+      }
+    }
+
     const { error } = await admin.auth.admin.deleteUser(user.id);
     if (error) return { ok: false, error: error.message };
   } catch {
@@ -376,18 +399,34 @@ export async function startCheckoutAction(formData: FormData): Promise<ActionRes
     .eq("user_id", user.id)
     .maybeSingle();
 
-  let customerId = billing?.stripe_customer_id as string | null;
+  const { createServiceClient } = await import("@/lib/supabase/admin");
+  const admin = createServiceClient();
+
+  let customerId = (billing?.stripe_customer_id as string | null) || null;
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: user.email || undefined,
       metadata: { user_id: user.id },
     });
     customerId = customer.id;
-    await supabase
+    const { error } = await admin
       .from("billing_subscriptions")
       .update({ stripe_customer_id: customerId })
       .eq("user_id", user.id);
+    if (error) return { ok: false, error: "billingUnavailable" };
   }
+
+  const existing = await stripe.subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 100,
+  });
+  if (existing.data.some((s) => BLOCKING_SUBSCRIPTION_STATUSES.includes(s.status))) {
+    return redirectToPortal(stripe, customerId);
+  }
+
+  const trialEligible =
+    existing.data.length === 0 && !billing?.trial_ends_at && !billing?.stripe_subscription_id;
 
   const siteUrl = getSiteUrl();
   const session = await stripe.checkout.sessions.create({
@@ -396,9 +435,17 @@ export async function startCheckoutAction(formData: FormData): Promise<ActionRes
     client_reference_id: user.id,
     locale: "fr",
     line_items: [{ price: priceId, quantity: 1 }],
+    ...(trialEligible ? { payment_method_collection: "if_required" as const } : {}),
     subscription_data: {
-      trial_period_days: TRIAL_DAYS,
       metadata: { user_id: user.id, plan },
+      ...(trialEligible
+        ? {
+            trial_period_days: TRIAL_DAYS,
+            trial_settings: {
+              end_behavior: { missing_payment_method: "pause" as const },
+            },
+          }
+        : {}),
     },
     metadata: { user_id: user.id, plan },
     success_url: `${siteUrl}/billing?checkout=success`,
@@ -410,11 +457,27 @@ export async function startCheckoutAction(formData: FormData): Promise<ActionRes
   redirect(session.url);
 }
 
-export async function openBillingPortalAction(): Promise<ActionResult> {
-  if (!isStripeConfigured()) {
-    return { ok: false, error: "billingNotConfigured" };
-  }
+async function redirectToPortal(stripe: Stripe, customerId: string): Promise<ActionResult> {
+  const portal = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: `${getSiteUrl()}/billing`,
+  });
+  if (!portal.url) return { ok: false, error: "billingUnavailable" };
+  redirect(portal.url);
+}
 
+type BillingContext =
+  | { ok: false; error: string }
+  | {
+      ok: true;
+      stripe: Stripe;
+      userId: string;
+      customerId: string | null;
+      subscriptionId: string | null;
+    };
+
+async function loadBillingContext(): Promise<BillingContext> {
+  if (!isStripeConfigured()) return { ok: false, error: "billingNotConfigured" };
   const stripe = getStripe();
   if (!stripe) return { ok: false, error: "billingNotConfigured" };
 
@@ -426,19 +489,52 @@ export async function openBillingPortalAction(): Promise<ActionResult> {
 
   const { data: billing } = await supabase
     .from("billing_subscriptions")
-    .select("stripe_customer_id")
+    .select("stripe_customer_id, stripe_subscription_id")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!billing?.stripe_customer_id) {
+  return {
+    ok: true,
+    stripe,
+    userId: user.id,
+    customerId: billing?.stripe_customer_id || null,
+    subscriptionId: billing?.stripe_subscription_id || null,
+  };
+}
+
+export async function openBillingPortalAction(): Promise<ActionResult> {
+  const ctx = await loadBillingContext();
+  if (!ctx.ok) return ctx;
+  if (!ctx.customerId) return { ok: false, error: "billingUnavailable" };
+  return redirectToPortal(ctx.stripe, ctx.customerId);
+}
+
+async function setCancelAtPeriodEnd(cancel: boolean): Promise<ActionResult> {
+  const ctx = await loadBillingContext();
+  if (!ctx.ok) return ctx;
+  if (!ctx.subscriptionId) return { ok: false, error: "billingUnavailable" };
+
+  try {
+    const sub = await ctx.stripe.subscriptions.update(ctx.subscriptionId, {
+      cancel_at_period_end: cancel,
+    });
+    const { createServiceClient } = await import("@/lib/supabase/admin");
+    await createServiceClient()
+      .from("billing_subscriptions")
+      .update(billingPatchFromSubscription(sub))
+      .eq("user_id", ctx.userId);
+  } catch {
     return { ok: false, error: "billingUnavailable" };
   }
 
-  const portal = await stripe.billingPortal.sessions.create({
-    customer: billing.stripe_customer_id,
-    return_url: `${getSiteUrl()}/billing`,
-  });
+  revalidatePath("/billing");
+  return { ok: true };
+}
 
-  if (!portal.url) return { ok: false, error: "billingUnavailable" };
-  redirect(portal.url);
+export async function cancelSubscriptionAction(): Promise<ActionResult> {
+  return setCancelAtPeriodEnd(true);
+}
+
+export async function resumeSubscriptionAction(): Promise<ActionResult> {
+  return setCancelAtPeriodEnd(false);
 }

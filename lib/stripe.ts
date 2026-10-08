@@ -38,6 +38,18 @@ export function planFromPriceId(priceId: string | null | undefined): BillingPlan
   return null;
 }
 
+export const BLOCKING_SUBSCRIPTION_STATUSES: Stripe.Subscription.Status[] = [
+  "trialing",
+  "active",
+  "past_due",
+  "unpaid",
+];
+
+export const REPLACEABLE_SUBSCRIPTION_STATUSES: Stripe.Subscription.Status[] = [
+  "paused",
+  "incomplete",
+];
+
 export function checkoutTag(plan: BillingPlan) {
   const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
   return `oa_checkout_${plan}_${suffix}`;
