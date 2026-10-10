@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SubscriptionForm } from "@/components/subscription-form";
 import type { UserSubscription } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Modifier l'abonnement",
+  description: "Mettez à jour les informations de votre abonnement OptimAbonne.",
+};
 
 export default async function EditSubscriptionPage({
   params,

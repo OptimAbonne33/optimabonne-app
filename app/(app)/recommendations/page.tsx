@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { loadOptimization } from "@/lib/data";
 import { RecommendationsView } from "@/components/recommendations/recommendations-view";
+
+export const metadata: Metadata = {
+  title: "Recommandations",
+  description:
+    "Découvrez les meilleures alternatives pour réduire vos abonnements et frais fixes.",
+};
 
 export default async function RecommendationsPage() {
   const supabase = await createClient();

@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+
+export const metadata: Metadata = {
+  title: "Vérifiez votre e-mail",
+  description:
+    "Confirmez votre adresse e-mail pour activer votre compte OptimAbonne.",
+};
 
 export default async function VerifyEmailPage() {
   const t = await getTranslations("auth");

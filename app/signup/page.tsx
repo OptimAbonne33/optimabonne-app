@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth-form";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Créer un compte",
+  description:
+    "Créez votre compte OptimAbonne et commencez l'essai gratuit pour optimiser vos frais fixes récurrents.",
+};
 
 export default function SignupPage() {
   return (

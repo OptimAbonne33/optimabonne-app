@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/profile-form";
 import type { Profile } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Profil",
+  description: "Gérez vos informations personnelles et la sécurité de votre compte.",
+};
 
 export default async function ProfilePage() {
   const t = await getTranslations("profile");

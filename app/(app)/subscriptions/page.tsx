@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SubscriptionList } from "@/components/subscription-list";
 import type { UserSubscription } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Mes abonnements",
+  description:
+    "Gérez vos abonnements mobile, internet, streaming et énergie au même endroit.",
+};
 
 export default async function SubscriptionsPage() {
   const t = await getTranslations("subscriptions");

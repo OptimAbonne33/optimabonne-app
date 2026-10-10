@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -17,6 +18,27 @@ import {
 } from "@/lib/types";
 import { CategoryIcon } from "@/components/icons";
 import { PriceHistoryChart } from "@/components/subscriptions/price-history-chart";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("user_subscriptions")
+    .select("provider_name")
+    .eq("id", id)
+    .maybeSingle();
+  const name = data?.provider_name?.trim();
+  return {
+    title: name || "Détail abonnement",
+    description: name
+      ? `Détails, historique de prix et alternatives pour ${name}.`
+      : "Détails de votre abonnement, historique de prix et alternatives.",
+  };
+}
 
 export default async function SubscriptionDetailPage({
   params,

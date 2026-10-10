@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { BillingView } from "@/components/billing/billing-view";
 import { emptyBilling, isTrialEligible } from "@/lib/billing";
 import { isStripeConfigured } from "@/lib/stripe";
 import type { BillingSubscription } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Facturation",
+  description:
+    "Gérez votre essai OptimAbonne, votre abonnement mensuel ou annuel et vos factures.",
+};
 
 export default async function BillingPage({
   searchParams,

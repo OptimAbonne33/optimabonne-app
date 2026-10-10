@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { loadOptimization } from "@/lib/data";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
@@ -5,6 +6,12 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { IconArrowRight } from "@/components/icons";
 import { displayFirstName } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Tableau de bord",
+  description:
+    "Vue d'ensemble de vos frais fixes, score d'optimisation et économies potentielles.",
+};
 
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");

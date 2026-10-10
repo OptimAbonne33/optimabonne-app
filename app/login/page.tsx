@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth-form";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Connexion",
+  description:
+    "Connectez-vous à OptimAbonne pour suivre vos abonnements et découvrir des économies sur vos frais fixes.",
+};
 
 export default function LoginPage() {
   return (

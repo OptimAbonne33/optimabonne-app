@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingForm } from "@/components/onboarding-form";
+
+export const metadata: Metadata = {
+  title: "Onboarding",
+  description:
+    "Ajoutez votre premier abonnement et démarrez votre optimisation OptimAbonne.",
+};
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
