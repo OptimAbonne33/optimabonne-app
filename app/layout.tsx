@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Plus_Jakarta_Sans, IBM_Plex_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { Axeptio } from "@/components/axeptio";
 import {
   defaultDescription,
   defaultTitle,
@@ -58,6 +60,9 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
   const jsonLd = softwareApplicationJsonLd();
+  const axeptioClientId = process.env.NEXT_PUBLIC_AXEPTIO_CLIENT_ID || "";
+  const axeptioCookiesVersion =
+    process.env.NEXT_PUBLIC_AXEPTIO_COOKIES_VERSION || "optimabonne-fr";
 
   return (
     <html
@@ -65,6 +70,14 @@ export default async function RootLayout({
       className={`${jakarta.variable} ${ibmPlex.variable} h-full antialiased`}
     >
       <body className="relative z-[1] flex min-h-full flex-col font-sans">
+        {axeptioClientId ? (
+          <>
+            <Script id="axeptio-settings" strategy="beforeInteractive">
+              {`window.axeptioSettings={clientId:${JSON.stringify(axeptioClientId)},cookiesVersion:${JSON.stringify(axeptioCookiesVersion)}};window._axcb=window._axcb||[];`}
+            </Script>
+            <Axeptio />
+          </>
+        ) : null}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
