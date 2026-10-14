@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/app-sidebar";
 import { MobileNav } from "@/components/mobile-nav";
 import { BillingBanner } from "@/components/billing/billing-banner";
+import { isAdminUser } from "@/lib/admin";
 import { emptyBilling } from "@/lib/billing";
 import { isStripeConfigured } from "@/lib/stripe";
 import type { BillingSubscription, Profile } from "@/lib/types";
@@ -33,12 +34,13 @@ export default async function AppLayout({
     (billingRow as BillingSubscription | null) || emptyBilling(user.id);
 
   return (
-    <div className="relative z-[1] flex min-h-screen overflow-x-hidden bg-bg">
+    <div className="relative z-[1] flex min-h-dvh overflow-x-hidden bg-bg">
       <AppSidebar
         userName={p?.full_name || p?.email || user.email || "User"}
         billingStatus={billing.status}
+        isAdmin={isAdminUser(user)}
       />
-      <div className="flex-1 overflow-y-auto px-4 py-6 pb-28 sm:px-6 md:px-10 md:py-8 md:pb-8">
+      <div className="flex-1 overflow-y-auto px-5 py-6 pb-28 sm:px-8 md:px-10 md:py-8 md:pb-8">
         <BillingBanner
           status={billing.status}
           configured={isStripeConfigured()}

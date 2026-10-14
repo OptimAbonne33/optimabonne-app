@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingForm } from "@/components/onboarding-form";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: "Onboarding",
@@ -18,8 +19,13 @@ export default async function OnboardingPage() {
   if (!user) redirect("/login");
 
   return (
-    <main className="relative z-[1] flex min-h-screen flex-col items-center justify-center bg-bg">
-      <OnboardingForm />
-    </main>
+    <div className="relative z-[1] flex min-h-dvh flex-col bg-bg">
+      <main className="flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8">
+        <OnboardingForm />
+      </main>
+      <div className="px-5 sm:px-8">
+        <SiteFooter />
+      </div>
+    </div>
   );
 }

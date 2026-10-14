@@ -9,6 +9,27 @@
 
 Do not commit live keys. The app runs without Stripe env vars; billing shows a “not connected” state.
 
+### Admin offers (`/admin/offers`)
+
+Access is granted only when the user’s Supabase Auth `app_metadata.role` is `"admin"` (not `user_metadata` — that is user-editable).
+
+Grant once with the service role (replace the user id):
+
+```bash
+# Node one-liner / SQL Editor via Auth Admin API, or Dashboard:
+# Authentication → Users → user → App Metadata → { "role": "admin" }
+```
+
+```js
+const { createClient } = require("@supabase/supabase-js");
+const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+await admin.auth.admin.updateUserById("USER_UUID", {
+  app_metadata: { role: "admin" },
+});
+```
+
+Then sign out / sign in (or refresh session) so the JWT picks up the claim.
+
 ## Environment variables
 
 Copy `.env.example`. See that file for per-variable notes.
@@ -66,7 +87,7 @@ Subscribe to:
 
 ### Trial behaviour (matches brief)
 
-- First checkout: **14-day trial, no card required** (`payment_method_collection: if_required`).
+- First checkout: **4-day trial, no card required** (`payment_method_collection: if_required`).
 - If no payment method at trial end → subscription **pauses** → app status **expired**.
 - Repeat trial is not offered once the user already had a subscription / trial.
 - Cancel on the billing page schedules cancel at period end (Résilier). Portal stays for card + invoices.
@@ -89,7 +110,7 @@ Stripe Tax / `automatic_tax` is **not** enabled yet. Enable Tax + a registration
 4. **Résilier** → confirm → `cancel_at_period_end` + message with end date; **Reprendre** clears it.
 5. **Paiement et factures** opens Customer Portal.
 6. Cancelled / expired users can subscribe again **with** card (no second free trial).
-7. Optional: Stripe **Test clocks** — advance 14 days with no card → status **expired**; Zapier `trial_ending` when `trial_will_end` fires (~3 days before end).
+7. Optional: Stripe **Test clocks** — advance 4 days with no card → status **expired**; Zapier `trial_ending` when `trial_will_end` fires (~3 days before end; with a 4-day trial this is near the start).
 8. Auth + subscription form (`29,99`) still work.
 9. Account deletion cancels the Stripe customer (no further charges).
 

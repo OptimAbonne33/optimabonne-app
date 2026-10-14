@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { signInAction, signUpAction } from "@/app/actions";
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Logo } from "@/components/logo";
 import {
   isBlank,
@@ -30,6 +32,7 @@ export function AuthForm({
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function switchTab(next: "login" | "signup") {
@@ -51,6 +54,10 @@ export function AuthForm({
 
     if (tab === "signup" && isBlank(fullName)) {
       errors.fullName = te("required");
+    }
+
+    if (tab === "signup" && !acceptTerms) {
+      errors.acceptTerms = te("acceptTermsRequired");
     }
 
     return errors;
@@ -191,6 +198,35 @@ export function AuthForm({
           </div>
         ) : null}
 
+        {tab === "signup" ? (
+          <Checkbox
+            className="mb-4"
+            checked={acceptTerms}
+            error={Boolean(fieldErrors.acceptTerms)}
+            onChange={(next) => {
+              setAcceptTerms(next);
+              setFieldErrors((prev) => {
+                const copy = { ...prev };
+                delete copy.acceptTerms;
+                return copy;
+              });
+            }}
+          >
+            {t("acceptTermsPrefix")}{" "}
+            <Link href="/cgu" className="text-accent hover:underline">
+              {t("terms")}
+            </Link>{" "}
+            {t("and")}{" "}
+            <Link href="/cgv" className="text-accent hover:underline">
+              {t("cgv")}
+            </Link>
+            .
+          </Checkbox>
+        ) : null}
+        {fieldErrors.acceptTerms ? (
+          <p className="mb-3 text-[12px] text-danger">{fieldErrors.acceptTerms}</p>
+        ) : null}
+
         {formError ? (
           <p className="mb-3 rounded-[10px] border border-danger/30 bg-danger/10 px-3 py-2.5 text-[13px] text-danger">
             {formError}
@@ -245,8 +281,18 @@ export function AuthForm({
             </button>
           </>
         )}
-        <br />
-        {t("legal", { terms: t("terms"), privacy: t("privacy") })}
+        {tab === "login" ? (
+          <>
+            <br />
+            <Link href="/cgu" className="text-accent hover:underline">
+              {t("terms")}
+            </Link>
+            {" · "}
+            <Link href="/cgv" className="text-accent hover:underline">
+              {t("cgv")}
+            </Link>
+          </>
+        ) : null}
       </p>
     </div>
   );

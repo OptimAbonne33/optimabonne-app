@@ -43,7 +43,9 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/auth") ||
     path.startsWith("/api/webhooks") ||
     path === "/sitemap.xml" ||
-    path === "/robots.txt";
+    path === "/robots.txt" ||
+    path.startsWith("/cgu") ||
+    path.startsWith("/cgv");
 
   if (!user && !isPublic && path !== "/") {
     const redirectUrl = request.nextUrl.clone();

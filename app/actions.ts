@@ -379,6 +379,13 @@ export async function startCheckoutAction(formData: FormData): Promise<ActionRes
     return { ok: false, error: "billingNotConfigured" };
   }
 
+  const accepted =
+    String(formData.get("accept_terms") || "") === "on" ||
+    String(formData.get("accept_terms") || "") === "true";
+  if (!accepted) {
+    return { ok: false, error: "acceptTermsRequired" };
+  }
+
   const planRaw = String(formData.get("plan") || "");
   const plan: BillingPlan = planRaw === "annual" ? "annual" : "monthly";
   const stripe = getStripe();

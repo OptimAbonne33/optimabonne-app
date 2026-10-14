@@ -1,6 +1,6 @@
 # OptimAbonne
 
-French B2C SaaS to track fixed monthly expenses (mobile, internet, streaming, energy), score optimization potential, and surface affiliate recommendations. Monetized with Stripe subscriptions (€9.99/month or €49/year, 14-day free trial without a card).
+French B2C SaaS to track fixed monthly expenses (mobile, internet, streaming, energy), score optimization potential, and surface affiliate recommendations. Monetized with Stripe subscriptions (€9.99/month or €49/year, 4-day free trial without a card).
 
 ## Stack
 

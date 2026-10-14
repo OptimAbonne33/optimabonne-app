@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import type { BillingPlan } from "@/lib/types";
 
-const TRIAL_DAYS = 14;
+const TRIAL_DAYS = 4;
 
 export function isStripeConfigured() {
   return Boolean(

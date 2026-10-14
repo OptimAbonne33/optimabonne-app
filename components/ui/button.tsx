@@ -49,14 +49,21 @@ export function SubmitButton({
   children,
   className,
   variant = "primary",
+  disabled,
 }: {
   children: React.ReactNode;
   className?: string;
   variant?: Props["variant"];
+  disabled?: boolean;
 }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" variant={variant} disabled={pending} className={className}>
+    <Button
+      type="submit"
+      variant={variant}
+      disabled={pending || disabled}
+      className={className}
+    >
       {pending ? "…" : children}
     </Button>
   );

@@ -101,12 +101,53 @@ function onCookiesComplete(choices: Record<string, boolean>) {
   }
 }
 
+const AXEPTIO_POS_STYLE_ID = "oa-axeptio-button-pos";
+
+function pinAxeptioButtonBottomRight() {
+  const hosts = document.querySelectorAll<HTMLElement>(
+    "#axeptio_overlay, #axeptio_overlay .needsclick"
+  );
+
+  hosts.forEach((host) => {
+    const root = host.shadowRoot;
+    if (!root || root.getElementById(AXEPTIO_POS_STYLE_ID)) return;
+
+    const style = document.createElement("style");
+    style.id = AXEPTIO_POS_STYLE_ID;
+    style.textContent = `
+      #axeptio_main_button {
+        left: auto !important;
+        right: 16px !important;
+        bottom: 16px !important;
+      }
+      @media (max-width: 767px) {
+        #axeptio_main_button {
+          bottom: 5.75rem !important;
+        }
+      }
+    `;
+    root.appendChild(style);
+  });
+}
+
 export function Axeptio() {
   useEffect(() => {
     window._axcb = window._axcb || [];
     window._axcb.push((axeptio) => {
       axeptio.on("cookies:complete", onCookiesComplete);
     });
+
+    pinAxeptioButtonBottomRight();
+    const timer = window.setInterval(pinAxeptioButtonBottomRight, 400);
+    const stop = window.setTimeout(() => window.clearInterval(timer), 15000);
+    const observer = new MutationObserver(pinAxeptioButtonBottomRight);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    return () => {
+      window.clearInterval(timer);
+      window.clearTimeout(stop);
+      observer.disconnect();
+    };
   }, []);
 
   return (

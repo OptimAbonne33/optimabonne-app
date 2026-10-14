@@ -18,9 +18,11 @@ import type { BillingStatus } from "@/lib/types";
 export function AppSidebar({
   userName,
   billingStatus,
+  isAdmin = false,
 }: {
   userName: string;
   billingStatus: BillingStatus;
+  isAdmin?: boolean;
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
@@ -66,6 +68,16 @@ export function AppSidebar({
       label: t("profile"),
       match: "/profile",
     },
+    ...(isAdmin
+      ? [
+          {
+            href: "/admin/offers",
+            icon: IconSpark,
+            label: t("adminOffers"),
+            match: "/admin/offers",
+          },
+        ]
+      : []),
   ];
 
   function NavLink({

@@ -9,6 +9,7 @@ import {
   startCheckoutAction,
 } from "@/app/actions";
 import { SubmitButton } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { ActionResult } from "@/app/actions";
 import type { BillingSubscription } from "@/lib/types";
 import { isBillingEntitled } from "@/lib/billing";
@@ -27,6 +28,7 @@ export function BillingView({
   const t = useTranslations("billing");
   const te = useTranslations("errors");
   const [error, setError] = useState<string | null>(null);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const entitled = isBillingEntitled(billing.status);
   const endsAt =
     billing.status === "trial" ? billing.trial_ends_at : billing.current_period_end;
@@ -47,6 +49,11 @@ export function BillingView({
   }
 
   async function onCheckout(formData: FormData) {
+    if (!acceptTerms) {
+      setError(te("acceptTermsRequired"));
+      return;
+    }
+    formData.set("accept_terms", "on");
     await run(() => startCheckoutAction(formData));
   }
 
@@ -136,6 +143,13 @@ export function BillingView({
         </p>
       ) : entitled ? null : (
         <>
+          <Checkbox
+            className="mb-5 rounded-2xl border border-border bg-surface p-4 sm:p-5"
+            checked={acceptTerms}
+            onChange={setAcceptTerms}
+          >
+            {trialEligible ? t("trialConsent") : t("paidConsent")}
+          </Checkbox>
           <div className="grid gap-4 sm:grid-cols-2">
             <form
               action={onCheckout}
@@ -152,7 +166,7 @@ export function BillingView({
               <p className="mb-5 mt-2 text-[13px] text-muted">
                 {trialEligible ? t("trialHint") : t("paidHint")}
               </p>
-              <SubmitButton>
+              <SubmitButton disabled={!acceptTerms}>
                 {trialEligible ? t("chooseMonthly") : t("subscribeMonthly")}
               </SubmitButton>
             </form>
@@ -172,7 +186,7 @@ export function BillingView({
               <p className="mb-5 mt-2 text-[13px] text-muted">
                 {trialEligible ? t("trialHint") : t("paidHint")}
               </p>
-              <SubmitButton>
+              <SubmitButton disabled={!acceptTerms}>
                 {trialEligible ? t("chooseAnnual") : t("subscribeAnnual")}
               </SubmitButton>
             </form>

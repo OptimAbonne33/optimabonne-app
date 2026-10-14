@@ -9,6 +9,9 @@ export type Offer = {
   annual_price: number | null;
   description: string | null;
   affiliate_url: string;
+  official_url: string | null;
+  data_allowance: string | null;
+  last_verified_at: string | null;
   is_active: boolean;
   sort_priority: number;
 };
