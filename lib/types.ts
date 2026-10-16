@@ -32,6 +32,7 @@ export type Profile = {
   full_name: string | null;
   email: string | null;
   onboarding_completed: boolean;
+  tally_completed: boolean;
   created_at: string;
   updated_at: string;
 };

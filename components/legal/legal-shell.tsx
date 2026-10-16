@@ -38,11 +38,18 @@ export function LegalShell({
         <aside className="mt-12 rounded-2xl border border-border bg-surface p-5 text-[13px] text-muted">
           <p className="font-semibold text-ink">Mentions légales</p>
           <p className="mt-2">
-            {LEGAL.company}, représentée par {LEGAL.representative}
+            {LEGAL.company}, au capital de {LEGAL.capital} € — SIREN{" "}
+            {LEGAL.siren} — SIRET {LEGAL.siret}
+          </p>
+          <p className="mt-1">
+            Représentée par {LEGAL.representative}
           </p>
           <p className="mt-1">{LEGAL.address}</p>
           <p className="mt-1">
-            Contact :{" "}
+            <a className="text-accent" href={`tel:${LEGAL.phoneTel}`}>
+              {LEGAL.phone}
+            </a>
+            {" · "}
             <a className="text-accent" href={`mailto:${LEGAL.contactEmail}`}>
               {LEGAL.contactEmail}
             </a>

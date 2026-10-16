@@ -45,6 +45,18 @@
     "fullName": "Prénom",
     "fullNamePlaceholder": "Marie",
     "forgot": "Mot de passe oublié ?",
+    "forgotTitle": "Mot de passe oublié",
+    "forgotBody": "Indiquez votre email : nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+    "forgotSentBody": "Si un compte existe pour cet email, un lien de réinitialisation vient d'être envoyé. Vérifiez aussi vos spams.",
+    "forgotSubmit": "Envoyer le lien",
+    "backToLogin": "Retour à la connexion",
+    "resetTitle": "Nouveau mot de passe",
+    "resetBody": "Choisissez un mot de passe d'au moins 6 caractères.",
+    "resetSubmit": "Enregistrer le mot de passe",
+    "resetInvalidTitle": "Lien invalide ou expiré",
+    "resetInvalidBody": "Demandez un nouveau lien de réinitialisation pour continuer.",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
     "submitLogin": "Se connecter",
     "submitSignup": "Créer mon compte",
     "google": "Continuer avec Google",
@@ -62,6 +74,12 @@
     "verifyBody": "Nous vous avons envoyé un lien de confirmation. Ouvrez votre boîte mail pour activer votre compte.",
     "verifyResend": "Renvoyer l'email",
     "checkSpam": "Pensez à regarder vos spams si vous ne le trouvez pas."
+  },
+  "tally": {
+    "title": "Bienvenue sur OptimAbonne",
+    "subtitle": "Répondez à ce court formulaire pour personnaliser votre expérience — une seule fois.",
+    "continue": "Continuer",
+    "openExternal": "Ouvrir le formulaire dans un nouvel onglet"
   },
   "onboarding": {
     "stepAccount": "Compte créé",
@@ -244,7 +262,9 @@
     "billingNotConfigured": "Les paiements ne sont pas encore configurés",
     "billingUnavailable": "Impossible d'ouvrir Stripe pour le moment",
     "forbidden": "Accès réservé à l'administrateur",
-    "acceptTermsRequired": "Veuillez accepter les CGU et CGV pour continuer"
+    "acceptTermsRequired": "Veuillez accepter les CGU et CGV pour continuer",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "resetLinkInvalid": "Lien de réinitialisation invalide ou expiré"
   },
   "adminOffers": {
     "title": "Catalogue d'offres",

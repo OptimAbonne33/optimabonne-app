@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { LegalArticle, LegalShell } from "@/components/legal/legal-shell";
-import { LEGAL } from "@/lib/legal";
+import { LEGAL, editorLegalBlurb } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Conditions Générales de Vente",
@@ -16,8 +16,7 @@ export default function CgvPage() {
           régissent les relations contractuelles entre :
         </p>
         <p>
-          <strong>L&apos;Éditeur :</strong> {LEGAL.company}, représentée par{" "}
-          {LEGAL.representative}, dont le siège est situé {LEGAL.address}.
+          <strong>L&apos;Éditeur :</strong> {editorLegalBlurb()}
         </p>
         <p>
           <strong>L&apos;Utilisateur / Le Client :</strong> toute personne
@@ -190,22 +189,65 @@ export default function CgvPage() {
           le Client doit d&apos;abord contacter le service client d&apos;
           {LEGAL.brand} par email. Si aucune solution amiable n&apos;est trouvée
           dans un délai de deux (2) mois, le Client est informé qu&apos;il peut
-          recourir gratuitement à un médiateur de la consommation agréé. MCP
-          Médiation :{" "}
+          recourir gratuitement à un médiateur de la consommation agréé.
+          Conformément à l&apos;article L612-1 du code de la consommation, tout
+          consommateur a le droit de recourir gratuitement à un médiateur de la
+          consommation en vue de la résolution amiable du litige qui l&apos;oppose
+          à un professionnel. À cet effet, le professionnel garantit au
+          consommateur le recours effectif à un dispositif de médiation de la
+          consommation.
+        </p>
+        <p>
+          Le médiateur compétent est {LEGAL.mediator.fullName},{" "}
+          {LEGAL.mediator.address}. Site :{" "}
           <a
             className="text-accent"
-            href="https://mcpmediation.org"
+            href={LEGAL.mediator.url}
             target="_blank"
             rel="noopener noreferrer"
           >
-            https://mcpmediation.org
+            {LEGAL.mediator.url}
           </a>
-          .
+          . {LEGAL.mediator.name} vous aide à résoudre à l&apos;amiable votre
+          litige de la consommation, en mettant à votre disposition un médiateur
+          de la consommation, en cas de litige non résolu avec un commerçant, un
+          artisan ou un prestataire de service.
         </p>
         <p>
           <strong>9.3. Tribunal compétent :</strong> Tout litige qui ne pourrait
           être réglé à l&apos;amiable sera soumis aux tribunaux français
           compétents selon les règles de droit commun.
+        </p>
+      </LegalArticle>
+
+      <LegalArticle title="Article 10 — Droit de rétractation et contenu numérique">
+        <p>
+          Conformément à l&apos;article L. 221-28 13° du Code de la
+          consommation, le droit de rétractation ne peut être exercé pour les
+          contrats de fourniture d&apos;un contenu numérique non fourni sur un
+          support matériel dont l&apos;exécution a commencé après accord
+          préalable exprès du consommateur et renoncement exprès à son droit de
+          rétractation. En cochant la case dédiée lors de la validation de sa
+          commande, l&apos;Utilisateur demande l&apos;accès immédiat au logiciel
+          SaaS « {LEGAL.brand} » avant l&apos;expiration du délai légal de
+          quatorze (14) jours et renonce expressément à bénéficier de son droit
+          de rétractation. Aucun remboursement ne pourra être effectué une fois
+          l&apos;accès au service activé.
+        </p>
+        <p>
+          <strong>10.2. Période d&apos;essai gratuit et transition vers
+          l&apos;abonnement :</strong>{" "}
+          L&apos;Éditeur propose à l&apos;Utilisateur une période d&apos;essai
+          gratuit d&apos;une durée de quatre (4) jours calendaires à compter de
+          son inscription. Durant cette période, l&apos;Utilisateur peut
+          résilier son accès à tout moment et sans frais depuis son espace
+          client. À l&apos;expiration de ces quatre (4) jours, et sauf
+          résiliation préalable par l&apos;Utilisateur, l&apos;abonnement payant
+          choisi lors de l&apos;inscription débute automatiquement.
+          L&apos;Utilisateur ayant expressément renoncé à son droit de
+          rétractation lors de son inscription initiale pour accéder
+          immédiatement au service, aucun remboursement ne sera accordé après le
+          déclenchement du premier prélèvement.
         </p>
       </LegalArticle>
     </LegalShell>

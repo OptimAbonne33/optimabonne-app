@@ -30,6 +30,16 @@ await admin.auth.admin.updateUserById("USER_UUID", {
 
 Then sign out / sign in (or refresh session) so the JWT picks up the claim.
 
+### Auth redirect URLs (password reset)
+
+In Supabase → Authentication → URL Configuration, allow:
+
+- `{SITE_URL}/auth/callback`
+- `{SITE_URL}/auth/callback?next=/reset-password`
+- `{SITE_URL}/auth/confirm`
+
+Optional env: `NEXT_PUBLIC_TALLY_FORM_ID`.
+
 ## Environment variables
 
 Copy `.env.example`. See that file for per-variable notes.

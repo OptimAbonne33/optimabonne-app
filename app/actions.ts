@@ -96,6 +96,78 @@ export async function signOutAction() {
   redirect("/login");
 }
 
+export async function requestPasswordResetAction(
+  formData: FormData,
+): Promise<ActionResult> {
+  const email = String(formData.get("email") || "")
+    .trim()
+    .toLowerCase();
+
+  if (!email || !email.includes("@")) {
+    return { ok: false, error: "required" };
+  }
+
+  const supabase = await createClient();
+  const siteUrl = getSiteUrl();
+
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/auth/callback?next=/reset-password`,
+  });
+
+  return { ok: true };
+}
+
+export async function updatePasswordAction(
+  formData: FormData,
+): Promise<ActionResult> {
+  const password = String(formData.get("password") || "");
+  const confirm = String(formData.get("confirmPassword") || "");
+
+  if (password.length < 6) {
+    return { ok: false, error: "weakPassword" };
+  }
+  if (password !== confirm) {
+    return { ok: false, error: "passwordMismatch" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { ok: false, error: "resetLinkInvalid" };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { ok: false, error: error.message };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarding_completed")
+    .maybeSingle();
+
+  return {
+    ok: true,
+    redirectTo: profile?.onboarding_completed ? "/dashboard" : "/onboarding",
+  };
+}
+
+export async function markTallyCompletedAction(): Promise<ActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { ok: false, error: "notAuthenticated" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ tally_completed: true })
+    .eq("id", user.id);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 export async function updateProfileAction(
   formData: FormData,
 ): Promise<ActionResult> {

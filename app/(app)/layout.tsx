@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/app-sidebar";
 import { MobileNav } from "@/components/mobile-nav";
 import { BillingBanner } from "@/components/billing/billing-banner";
+import { TallyPrompt } from "@/components/tally-prompt";
 import { isAdminUser } from "@/lib/admin";
 import { emptyBilling } from "@/lib/billing";
 import { isStripeConfigured } from "@/lib/stripe";
@@ -48,6 +49,7 @@ export default async function AppLayout({
         {children}
       </div>
       <MobileNav />
+      <TallyPrompt open={p?.tally_completed === false} />
     </div>
   );
 }

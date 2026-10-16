@@ -39,6 +39,7 @@ export async function updateSession(request: NextRequest) {
   const isPublic =
     path.startsWith("/login") ||
     path.startsWith("/signup") ||
+    path.startsWith("/forgot-password") ||
     path.startsWith("/verify-email") ||
     path.startsWith("/auth") ||
     path.startsWith("/api/webhooks") ||
@@ -47,7 +48,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/cgu") ||
     path.startsWith("/cgv");
 
-  if (!user && !isPublic && path !== "/") {
+  if (!user && !isPublic && path !== "/" && path !== "/reset-password") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     const redirect = NextResponse.redirect(redirectUrl);
@@ -57,8 +58,12 @@ export async function updateSession(request: NextRequest) {
     return redirect;
   }
 
-  // logged-in users hitting auth screens → home decides onboarding vs dashboard
-  if (user && (path.startsWith("/login") || path.startsWith("/signup"))) {
+  if (
+    user &&
+    (path.startsWith("/login") ||
+      path.startsWith("/signup") ||
+      path.startsWith("/forgot-password"))
+  ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/";
     const redirect = NextResponse.redirect(redirectUrl);

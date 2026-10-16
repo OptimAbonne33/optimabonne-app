@@ -27,6 +27,7 @@ export default async function ProfilePage() {
     full_name: (user!.user_metadata?.full_name as string) || "",
     email: user!.email || "",
     onboarding_completed: false,
+    tally_completed: true,
     created_at: "",
     updated_at: "",
   };

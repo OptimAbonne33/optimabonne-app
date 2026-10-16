@@ -194,7 +194,12 @@ export function AuthForm({
 
         {tab === "login" ? (
           <div className="mb-5 text-right">
-            <span className="text-xs text-muted">{t("forgot")}</span>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted transition-colors hover:text-accent"
+            >
+              {t("forgot")}
+            </Link>
           </div>
         ) : null}
 

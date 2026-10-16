@@ -45,6 +45,18 @@
     "fullName": "First name",
     "fullNamePlaceholder": "Marie",
     "forgot": "Forgot password?",
+    "forgotTitle": "Forgot password",
+    "forgotBody": "Enter your email and we’ll send a link to choose a new password.",
+    "forgotSentBody": "If an account exists for this email, a reset link has been sent. Check spam too.",
+    "forgotSubmit": "Send reset link",
+    "backToLogin": "Back to login",
+    "resetTitle": "Choose a new password",
+    "resetBody": "Use at least 6 characters.",
+    "resetSubmit": "Save password",
+    "resetInvalidTitle": "Invalid or expired link",
+    "resetInvalidBody": "Request a new reset link to continue.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
     "submitLogin": "Log in",
     "submitSignup": "Create my account",
     "google": "Continue with Google",
@@ -62,6 +74,12 @@
     "verifyBody": "We sent you a confirmation link. Open your inbox to activate your account.",
     "verifyResend": "Resend email",
     "checkSpam": "Check spam if you don't see it."
+  },
+  "tally": {
+    "title": "Welcome to OptimAbonne",
+    "subtitle": "Fill this short form once so we can tailor your experience.",
+    "continue": "Continue",
+    "openExternal": "Open the form in a new tab"
   },
   "onboarding": {
     "stepAccount": "Account created",
@@ -244,7 +262,9 @@
     "billingNotConfigured": "Payments are not configured yet",
     "billingUnavailable": "Unable to open Stripe right now",
     "forbidden": "Admin access only",
-    "acceptTermsRequired": "Please accept the CGU and CGV to continue"
+    "acceptTermsRequired": "Please accept the CGU and CGV to continue",
+    "passwordMismatch": "Passwords do not match",
+    "resetLinkInvalid": "Reset link is invalid or expired"
   },
   "adminOffers": {
     "title": "Offers catalogue",

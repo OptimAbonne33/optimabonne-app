@@ -25,23 +25,32 @@ function publicOrigin(request: Request) {
   return new URL(request.url).origin;
 }
 
+function safeNextPath(next: string | null) {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const nextParam = searchParams.get("next");
+  const next = safeNextPath(searchParams.get("next"));
   const origin = publicOrigin(request);
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      if (next === "/reset-password") {
+        return NextResponse.redirect(`${origin}/reset-password`);
+      }
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_completed")
         .maybeSingle();
 
       const destination = profile?.onboarding_completed
-        ? nextParam || "/dashboard"
+        ? next || "/dashboard"
         : "/onboarding";
 
       return NextResponse.redirect(`${origin}${destination}`);
