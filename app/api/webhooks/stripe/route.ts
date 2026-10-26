@@ -9,7 +9,7 @@ import {
 } from "@/lib/stripe";
 import {
   billingPatchFromSubscription,
-  isBillingEntitled,
+  isEntitledBillingStatus,
   planFromSubscription,
 } from "@/lib/billing";
 import type { BillingStatus } from "@/lib/types";
@@ -219,7 +219,7 @@ async function upsertFromSubscription(
   const isStale =
     current.stripe_subscription_id &&
     current.stripe_subscription_id !== sub.id &&
-    !isBillingEntitled(patch.status);
+    !isEntitledBillingStatus(patch.status);
   if (isStale) return current.user_id;
 
   const { error } = await admin

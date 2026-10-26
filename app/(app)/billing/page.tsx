@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { BillingView } from "@/components/billing/billing-view";
-import { emptyBilling, isTrialEligible } from "@/lib/billing";
+import { emptyBilling } from "@/lib/billing";
 import { isStripeConfigured } from "@/lib/stripe";
 import type { BillingSubscription } from "@/lib/types";
 
@@ -22,6 +22,8 @@ export default async function BillingPage({
     data: { user },
   } = await supabase.auth.getUser();
 
+  await supabase.rpc("sync_billing_access");
+
   const { data } = await supabase
     .from("billing_subscriptions")
     .select("*")
@@ -41,7 +43,7 @@ export default async function BillingPage({
     <BillingView
       billing={billing}
       configured={isStripeConfigured()}
-      trialEligible={isTrialEligible(billing)}
+      trialEligible={false}
       checkout={checkout}
     />
   );

@@ -10,7 +10,6 @@ import { parsePrice } from "@/lib/validation";
 import { billingPatchFromSubscription } from "@/lib/billing";
 import {
   BLOCKING_SUBSCRIPTION_STATUSES,
-  TRIAL_DAYS,
   checkoutTag,
   getSiteUrl,
   getStripe,
@@ -62,6 +61,7 @@ export async function signUpAction(formData: FormData): Promise<ActionResult> {
   });
 
   if (data.session) {
+    await supabase.rpc("sync_billing_access");
     return { ok: true, redirectTo: "/onboarding" };
   }
 
@@ -77,6 +77,16 @@ export async function signInAction(formData: FormData): Promise<ActionResult> {
 
   if (error) {
     return { ok: false, error: "invalidCredentials" };
+  }
+
+  const { data: access } = await supabase.rpc("sync_billing_access");
+  if (
+    access &&
+    typeof access === "object" &&
+    "email_confirmed" in access &&
+    access.email_confirmed === false
+  ) {
+    return { ok: true, redirectTo: "/verify-email" };
   }
 
   const { data: profile } = await supabase
@@ -504,9 +514,6 @@ export async function startCheckoutAction(formData: FormData): Promise<ActionRes
     return redirectToPortal(stripe, customerId);
   }
 
-  const trialEligible =
-    existing.data.length === 0 && !billing?.trial_ends_at && !billing?.stripe_subscription_id;
-
   const siteUrl = getSiteUrl();
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -514,17 +521,8 @@ export async function startCheckoutAction(formData: FormData): Promise<ActionRes
     client_reference_id: user.id,
     locale: "fr",
     line_items: [{ price: priceId, quantity: 1 }],
-    ...(trialEligible ? { payment_method_collection: "if_required" as const } : {}),
     subscription_data: {
       metadata: { user_id: user.id, plan },
-      ...(trialEligible
-        ? {
-            trial_period_days: TRIAL_DAYS,
-            trial_settings: {
-              end_behavior: { missing_payment_method: "pause" as const },
-            },
-          }
-        : {}),
     },
     metadata: { user_id: user.id, plan },
     success_url: `${siteUrl}/billing?checkout=success`,

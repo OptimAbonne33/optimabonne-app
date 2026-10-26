@@ -6,8 +6,32 @@ import type {
 } from "@/lib/types";
 import { planFromPriceId } from "@/lib/stripe";
 
-export function isBillingEntitled(status: BillingStatus | null | undefined) {
-  return status === "trial" || status === "active";
+export type BillingAccess = {
+  entitled: boolean;
+  status: BillingStatus;
+  trial_ends_at?: string | null;
+  email_confirmed?: boolean;
+  admin?: boolean;
+};
+
+export function isBillingEntitled(
+  billing:
+    | Pick<BillingSubscription, "status" | "trial_ends_at">
+    | null
+    | undefined,
+) {
+  if (!billing) return false;
+  if (billing.status === "active" || billing.status === "past_due") return true;
+  if (billing.status === "trial" && billing.trial_ends_at) {
+    return new Date(billing.trial_ends_at).getTime() > Date.now();
+  }
+  return false;
+}
+
+export function isEntitledBillingStatus(
+  status: BillingStatus | null | undefined,
+) {
+  return status === "trial" || status === "active" || status === "past_due";
 }
 
 export function mapStripeStatus(
@@ -18,10 +42,11 @@ export function mapStripeStatus(
       return "trial";
     case "active":
       return "active";
+    case "past_due":
+      return "past_due";
     case "canceled":
     case "incomplete_expired":
       return "cancelled";
-    case "past_due":
     case "unpaid":
     case "incomplete":
     case "paused":
@@ -51,7 +76,15 @@ export function planFromSubscription(
 }
 
 export function billingPatchFromSubscription(sub: Stripe.Subscription) {
-  return {
+  const patch: {
+    status: BillingStatus;
+    stripe_customer_id: string | null;
+    stripe_subscription_id: string;
+    plan: BillingPlan | null;
+    current_period_end: string | null;
+    cancel_at_period_end: boolean;
+    trial_ends_at?: string | null;
+  } = {
     status: mapStripeStatus(sub.status),
     stripe_customer_id:
       typeof sub.customer === "string"
@@ -59,10 +92,15 @@ export function billingPatchFromSubscription(sub: Stripe.Subscription) {
         : sub.customer?.id || null,
     stripe_subscription_id: sub.id,
     plan: planFromSubscription(sub),
-    trial_ends_at: unixToIso(sub.trial_end),
     current_period_end: subscriptionPeriodEnd(sub),
     cancel_at_period_end: Boolean(sub.cancel_at_period_end || sub.cancel_at),
   };
+
+  if (sub.trial_end) {
+    patch.trial_ends_at = unixToIso(sub.trial_end);
+  }
+
+  return patch;
 }
 
 export function isTrialEligible(billing: BillingSubscription) {

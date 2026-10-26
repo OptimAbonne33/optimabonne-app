@@ -33,6 +33,7 @@
       "none": "Gratuit",
       "trial": "Essai",
       "active": "Actif",
+      "past_due": "Paiement en retard",
       "expired": "Expiré",
       "cancelled": "Annulé"
     }
@@ -216,6 +217,7 @@
       "none": "Aucun abonnement",
       "trial": "Essai 4 jours",
       "active": "Abonnement actif",
+      "past_due": "Paiement échoué",
       "expired": "Essai ou paiement expiré",
       "cancelled": "Abonnement annulé"
     },
@@ -233,11 +235,14 @@
     "chooseMonthly": "Essai gratuit — puis 9,99€/mois",
     "chooseAnnual": "Essai gratuit — puis 49€/an",
     "manage": "Paiement et factures",
-    "notConfigured": "Les paiements Stripe ne sont pas encore connectés. L'app reste utilisable en attendant.",
+    "notConfigured": "Les paiements Stripe ne sont pas encore connectés. Les offres payantes seront indisponibles tant que le checkout n'est pas configuré.",
     "checkoutSuccess": "C'est noté ! Le statut se met à jour en quelques secondes.",
     "checkoutCancel": "Checkout annulé. Vous pouvez réessayer quand vous voulez.",
-    "bannerLocked": "Pour continuer, lancez l'essai 4 jours ou réactivez votre abonnement.",
+    "bannerLocked": "Votre essai est terminé. Choisissez une offre pour continuer.",
     "bannerCta": "Voir les offres",
+    "bannerPastDue": "Paiement échoué — mets à jour ta carte pour garder l'accès.",
+    "bannerPastDueCta": "Mettre à jour la carte",
+    "pastDueHint": "Ton paiement a échoué. Tu gardes l'accès pendant la période de grâce — mets à jour ta carte.",
     "paidHint": "Vous avez déjà profité de l'essai. Résiliable à tout moment.",
     "trialConsent": "En cochant cette case, je demande l'accès immédiat au service pour mon essai gratuit de 4 jours. J'accepte les CGV et la Politique de Confidentialité. Je reconnais que si je ne résilie pas mon accès avant la fin des 4 jours, je serai automatiquement prélevé de 9,99 € TTC par mois (ou 49 € TTC par an selon l'offre choisie) sur ma carte bancaire, et je renonce à mon droit de rétractation de 14 jours pour la période payante ainsi initiée.",
     "paidConsent": "En cochant cette case, j'accepte les CGV et la Politique de Confidentialité, et je demande l'accès immédiat au service OptimAbonne. Je renonce à mon droit de rétractation de 14 jours pour la période payante ainsi initiée.",

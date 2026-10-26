@@ -8,6 +8,7 @@ export type BillingStatus =
   | "none"
   | "trial"
   | "active"
+  | "past_due"
   | "expired"
   | "cancelled";
 

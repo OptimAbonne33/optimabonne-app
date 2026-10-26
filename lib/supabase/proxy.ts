@@ -1,6 +1,25 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { BillingAccess } from "@/lib/billing";
 import { getSupabaseKey, getSupabaseUrl } from "./env";
+
+function copyCookies(from: NextResponse, to: NextResponse) {
+  from.cookies.getAll().forEach((c) => {
+    to.cookies.set(c.name, c.value);
+  });
+  return to;
+}
+
+function redirectWithCookies(
+  request: NextRequest,
+  supabaseResponse: NextResponse,
+  pathname: string,
+) {
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.pathname = pathname;
+  redirectUrl.search = "";
+  return copyCookies(supabaseResponse, NextResponse.redirect(redirectUrl));
+}
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -25,8 +44,8 @@ export async function updateSession(request: NextRequest) {
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options),
         );
-        Object.entries(headers).forEach(([key, value]) =>
-          supabaseResponse.headers.set(key, value),
+        Object.entries(headers).forEach(([headerKey, value]) =>
+          supabaseResponse.headers.set(headerKey, value),
         );
       },
     },
@@ -49,13 +68,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/cgv");
 
   if (!user && !isPublic && path !== "/" && path !== "/reset-password") {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
-    const redirect = NextResponse.redirect(redirectUrl);
-    supabaseResponse.cookies.getAll().forEach((c) => {
-      redirect.cookies.set(c.name, c.value);
-    });
-    return redirect;
+    return redirectWithCookies(request, supabaseResponse, "/login");
   }
 
   if (
@@ -64,13 +77,28 @@ export async function updateSession(request: NextRequest) {
       path.startsWith("/signup") ||
       path.startsWith("/forgot-password"))
   ) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/";
-    const redirect = NextResponse.redirect(redirectUrl);
-    supabaseResponse.cookies.getAll().forEach((c) => {
-      redirect.cookies.set(c.name, c.value);
-    });
-    return redirect;
+    return redirectWithCookies(request, supabaseResponse, "/");
+  }
+
+  const billingExempt =
+    isPublic ||
+    path === "/" ||
+    path.startsWith("/billing") ||
+    path.startsWith("/onboarding") ||
+    path.startsWith("/reset-password") ||
+    path.startsWith("/api/");
+
+  if (user && !billingExempt) {
+    const { data: access } = await supabase.rpc("sync_billing_access");
+    const billing = access as BillingAccess | null;
+
+    if (billing && billing.email_confirmed === false) {
+      return redirectWithCookies(request, supabaseResponse, "/verify-email");
+    }
+
+    if (!billing?.entitled) {
+      return redirectWithCookies(request, supabaseResponse, "/billing");
+    }
   }
 
   return supabaseResponse;

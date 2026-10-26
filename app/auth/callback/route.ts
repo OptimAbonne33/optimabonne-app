@@ -44,6 +44,8 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/reset-password`);
       }
 
+      await supabase.rpc("sync_billing_access");
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_completed")

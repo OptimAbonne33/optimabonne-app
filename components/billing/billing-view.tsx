@@ -29,7 +29,7 @@ export function BillingView({
   const te = useTranslations("errors");
   const [error, setError] = useState<string | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const entitled = isBillingEntitled(billing.status);
+  const entitled = isBillingEntitled(billing);
   const endsAt =
     billing.status === "trial" ? billing.trial_ends_at : billing.current_period_end;
 
@@ -103,34 +103,40 @@ export function BillingView({
             {t("trialUntil", { date: formatDate(billing.trial_ends_at) || "" })}
           </p>
         ) : null}
+        {billing.status === "past_due" ? (
+          <p className="mt-2 text-[13px] text-warn">{t("pastDueHint")}</p>
+        ) : null}
         {entitled && billing.cancel_at_period_end && endsAt ? (
           <p className="mt-1 text-[13px] text-danger">
             {t("cancelScheduled", { date: formatDate(endsAt) || "" })}
           </p>
-        ) : billing.status === "active" && billing.current_period_end ? (
+        ) : (billing.status === "active" || billing.status === "past_due") &&
+          billing.current_period_end ? (
           <p className="mt-1 text-[13px] text-muted">
             {t("renewsOn", { date: formatDate(billing.current_period_end) || "" })}
           </p>
         ) : null}
 
-        {configured && entitled ? (
+        {configured && entitled && billing.stripe_customer_id ? (
           <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
             <form action={() => run(openBillingPortalAction)}>
               <SubmitButton variant="outline" className="w-full sm:w-auto">
-                {t("manage")}
+                {billing.status === "past_due" ? t("bannerPastDueCta") : t("manage")}
               </SubmitButton>
             </form>
-            {billing.cancel_at_period_end ? (
-              <form action={() => run(resumeSubscriptionAction)}>
-                <SubmitButton className="w-full sm:w-auto">{t("resume")}</SubmitButton>
-              </form>
-            ) : (
-              <form action={onCancel}>
-                <SubmitButton variant="danger" className="w-full sm:w-auto">
-                  {t("cancel")}
-                </SubmitButton>
-              </form>
-            )}
+            {billing.status !== "past_due" && billing.status !== "trial" ? (
+              billing.cancel_at_period_end ? (
+                <form action={() => run(resumeSubscriptionAction)}>
+                  <SubmitButton className="w-full sm:w-auto">{t("resume")}</SubmitButton>
+                </form>
+              ) : (
+                <form action={onCancel}>
+                  <SubmitButton variant="danger" className="w-full sm:w-auto">
+                    {t("cancel")}
+                  </SubmitButton>
+                </form>
+              )
+            ) : null}
           </div>
         ) : null}
       </section>

@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
+      await supabase.rpc("sync_billing_access");
       return NextResponse.redirect(redirectTo);
     }
   }
